@@ -2,6 +2,8 @@
 
 A Python tool that extracts "Longer run target federal funds rate" percentiles (25th, median, 75th) from the New York Federal Reserve's Survey of Market Expectations.
 
+> **⚠️ Work in Progress**: PDF extraction for historical data (2011-2022) is still under development. Currently, XLSX extraction works reliably for 2023-2025 data. OpenAI-based PDF extraction is experimental.
+
 ## Overview
 
 This project scrapes the [NY Fed Survey of Market Expectations](https://www.newyorkfed.org/markets/market-intelligence/survey-of-market-expectations) page, downloads survey data files, and extracts the longer-run target federal funds rate percentile values into a tidy CSV format.
@@ -18,9 +20,18 @@ The NY Fed publishes survey results in multiple formats across different time pe
 
 ### Extraction Strategy
 
-1. **XLSX preferred**: When a "Data" XLSX file exists, extract from it (more reliable)
+1. **XLSX preferred**: When a "Data" XLSX file exists, extract from it (most reliable)
 2. **PDF fallback**: Parse Results PDFs using text extraction (pdfplumber)
 3. **OCR fallback**: When PDF text extraction fails, use OCR (pytesseract)
+4. **OpenAI extraction** *(experimental)*: Use GPT-4.5 for PDF analysis
+
+### Current Status
+
+| Period | Data Format | Extraction Status |
+|--------|-------------|-------------------|
+| 2023-2025 | XLSX | ✅ Working |
+| 2014-2022 | XLSX + PDF | 🚧 In progress |
+| 2011-2013 | PDF only | 🚧 In progress |
 
 ## Installation
 
@@ -78,6 +89,8 @@ python -m src.pipeline --help
 |--------|---------|-------------|
 | `--start-year` | 2011 | Earliest year to include |
 | `--end-year` | 2025 | Latest year to include |
+| `--include-pdfs` | False | Download PDFs even when XLSX available |
+| `--use-openai` | False | Use OpenAI GPT-4.5 for PDF extraction |
 | `--data-dir` | `data_raw/` | Directory for downloaded files |
 | `--output-dir` | `data_out/` | Directory for output CSV |
 | `--output-file` | `nyfed_ff_longrun_percentiles.csv` | Output filename |

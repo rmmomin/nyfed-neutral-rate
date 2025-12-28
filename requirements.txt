@@ -20,6 +20,9 @@ tqdm>=4.65.0
 pytest>=7.4.0
 pytest-cov>=4.1.0
 
+# OpenAI API (for PDF extraction)
+openai>=1.0.0
+
 # Type hints
 typing-extensions>=4.5.0
 

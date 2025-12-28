@@ -12,6 +12,7 @@ Usage:
 """
 
 import csv
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import List, Optional
@@ -76,6 +77,7 @@ def process_meeting(
     meeting: SurveyMeeting,
     data_dir: Path,
     use_ocr: bool = True,
+    use_openai: bool = False,
     prefer_xlsx: bool = True,
 ) -> List[ExtractedPercentile]:
     """
@@ -109,13 +111,24 @@ def process_meeting(
                 local_path = data_dir / Path(link.url).name.split("?")[0]
                 
                 if local_path.exists():
-                    extracted = extract_from_pdf(
-                        filepath=local_path,
-                        file_url=link.url,
-                        survey_date=meeting.meeting_date,
-                        survey_type=link.survey_type,
-                        use_ocr=use_ocr,
-                    )
+                    if use_openai:
+                        # Use OpenAI for PDF extraction
+                        from .extract_pdf_openai import extract_from_pdf_openai
+                        extracted = extract_from_pdf_openai(
+                            filepath=local_path,
+                            file_url=link.url,
+                            survey_date=meeting.meeting_date,
+                            survey_type=link.survey_type,
+                        )
+                    else:
+                        # Use pdfplumber/OCR
+                        extracted = extract_from_pdf(
+                            filepath=local_path,
+                            file_url=link.url,
+                            survey_date=meeting.meeting_date,
+                            survey_type=link.survey_type,
+                            use_ocr=use_ocr,
+                        )
                     results.extend(extracted)
     
     # If no results at all, create a placeholder
@@ -189,6 +202,18 @@ def process_meeting(
     help="Disable OCR for PDFs",
 )
 @click.option(
+    "--use-openai",
+    is_flag=True,
+    default=False,
+    help="Use OpenAI GPT-4.5 for PDF extraction (requires OPENAI_API_KEY env var)",
+)
+@click.option(
+    "--include-pdfs",
+    is_flag=True,
+    default=False,
+    help="Download PDFs even when XLSX is available",
+)
+@click.option(
     "--max-files",
     default=None,
     type=int,
@@ -216,6 +241,8 @@ def main(
     redownload: bool,
     use_ocr: bool,
     no_ocr: bool,
+    use_openai: bool,
+    include_pdfs: bool,
     max_files: Optional[int],
     verbose: bool,
     skip_download: bool,
@@ -229,6 +256,11 @@ def main(
     for the longer-run target federal funds rate question.
     
     Output is a tidy CSV with one row per survey date per panel.
+    
+    For PDF extraction with OpenAI, set OPENAI_API_KEY environment variable:
+    
+        export OPENAI_API_KEY=your-key-here
+        python -m src.pipeline --use-openai --include-pdfs
     """
     # Configure logging
     if verbose:
@@ -238,6 +270,13 @@ def main(
     # Handle OCR flags
     ocr_enabled = use_ocr and not no_ocr
     
+    # Check OpenAI key if using OpenAI
+    if use_openai and not os.environ.get("OPENAI_API_KEY"):
+        raise click.ClickException(
+            "OPENAI_API_KEY environment variable not set. "
+            "Set it with: export OPENAI_API_KEY=your-key-here"
+        )
+    
     logger.info("=" * 60)
     logger.info("NY Fed Longer-Run Federal Funds Rate Extractor")
     logger.info("=" * 60)
@@ -245,6 +284,8 @@ def main(
     logger.info(f"Data directory: {data_dir}")
     logger.info(f"Output: {output_dir / output_file}")
     logger.info(f"OCR enabled: {ocr_enabled}")
+    logger.info(f"OpenAI extraction: {use_openai}")
+    logger.info(f"Include PDFs: {include_pdfs}")
     
     # Ensure directories exist
     data_dir.mkdir(parents=True, exist_ok=True)
@@ -271,10 +312,11 @@ def main(
     if not skip_download:
         logger.info("\n[2/4] Downloading survey files...")
         try:
+            # If include_pdfs is True, don't prefer XLSX (download both)
             downloaded = download_all_meetings(
                 meetings=meetings,
                 data_dir=data_dir,
-                prefer_xlsx=True,
+                prefer_xlsx=not include_pdfs,
                 force=redownload,
                 max_files=max_files,
             )
@@ -295,6 +337,7 @@ def main(
                 meeting=meeting,
                 data_dir=data_dir,
                 use_ocr=ocr_enabled,
+                use_openai=use_openai,
             )
             all_results.extend(results)
         except Exception as e:
@@ -351,4 +394,3 @@ def main(
 
 if __name__ == "__main__":
     main()
-
