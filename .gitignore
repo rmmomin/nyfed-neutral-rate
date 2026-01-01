@@ -69,12 +69,11 @@ venv.bak/
 
 # Project-specific
 data_raw/
-data_out/
-*.xlsx
-*.xls
-*.pdf
-!tests/fixtures/*.xlsx
-!tests/fixtures/*.pdf
+
+# Allow data_out files but ignore raw downloads
+!data_out/*.xlsx
+!data_out/*.csv
+!external_data/*.xlsx
 
 # Logs
 *.log

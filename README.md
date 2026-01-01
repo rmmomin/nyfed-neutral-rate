@@ -110,7 +110,7 @@ neutral-rate-survey/
 ├── external_data/                 # Reference datasets
 │   └── Hartley2024_RStar_12312025.xlsx
 ├── data_raw/                      # Downloaded files (git-ignored)
-├── data_out/                      # Output CSV files (git-ignored)
+├── data_out/                      # Output CSV files
 ├── .cursorrules                   # Cursor AI rules
 ├── requirements.txt
 └── README.md
