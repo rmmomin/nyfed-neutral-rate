@@ -116,17 +116,28 @@ neutral-rate-survey/
 └── README.md
 ```
 
+## Results
+
+![Longer-Run Federal Funds Rate Expectations](data_out/longrun_rate_chart.png)
+
+The chart shows:
+- **SPD (Primary Dealers)**: Continuous line with 25th-75th percentile shading
+- **SMP (Market Participants)**: Teal ▼ markers (2014-2023)
+- **Combined**: Red ■ markers (July 2023+)
+
 ## Validation Against Hartley (2024)
 
-Our extracted data is validated against Hartley (2024), a comprehensive survey of r* estimates:
+Our extracted data closely matches Hartley (2024), a comprehensive survey of r* estimates. Hartley's US series uses **SPD data for pre-July 2023** and **Combined data for July 2023+**, which we replicate:
 
-| Panel | Observations | Mean Abs Diff | Max Abs Diff |
-|-------|--------------|---------------|--------------|
-| Combined | 54 | 0.005% | 0.130% |
-| SPD | 65 | 0.019% | 0.190% |
-| SMP | 66 | 0.113% | 0.310% |
+| Metric | Value |
+|--------|-------|
+| Matched observations | 107 |
+| Exact matches | 104 (97%) |
+| Mean absolute difference | 0.003% |
+| Max absolute difference | 0.13% |
+| Within 0.1% | 105 (98%) |
 
-**Key finding:** SPD (Primary Dealers) data aligns most closely with Hartley's US series.
+**Key finding:** Near-perfect alignment with Hartley's US series when using SPD (pre-July 2023) + Combined (July 2023+).
 
 ### Reference
 
