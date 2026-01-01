@@ -14,5 +14,8 @@ tqdm>=4.65.0
 # OpenAI API (for PDF extraction)
 openai>=1.0.0
 
+# Plotting
+matplotlib>=3.7.0
+
 # Type hints
 typing-extensions>=4.5.0
