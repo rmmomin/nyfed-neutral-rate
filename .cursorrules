@@ -1,0 +1,66 @@
+# NY Fed Survey Extractor - Cursor Rules
+
+## OpenAI API Usage
+
+When using OpenAI API in this project, use `gpt-5.2` model:
+
+```python
+import base64
+from openai import OpenAI
+
+client = OpenAI(api_key=api_key, timeout=60)
+
+# For PDF files - send the entire PDF directly (NOT extracted text)
+with open("document.pdf", "rb") as f:
+    pdf_base64 = base64.standard_b64encode(f.read()).decode("utf-8")
+
+response = client.chat.completions.create(
+    model="gpt-5.2",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "file",
+                    "file": {
+                        "filename": "document.pdf",
+                        "file_data": f"data:application/pdf;base64,{pdf_base64}",
+                    }
+                },
+                {
+                    "type": "text",
+                    "text": "Your prompt here..."
+                }
+            ],
+        }
+    ],
+    max_completion_tokens=200,  # NOT max_tokens
+    temperature=0,
+)
+```
+
+### Key Points
+
+1. **Model**: Always use `gpt-5.2`
+2. **Timeout**: Set a 60-second timeout on the client
+3. **Token parameter**: Use `max_completion_tokens` (not `max_tokens`) - this is required for gpt-5.2
+4. **Temperature**: Use `temperature=0` for deterministic extraction
+5. **Send entire PDF**: Do NOT use pdfplumber/text extraction - send the entire PDF as base64 to preserve visual layout
+6. **No truncation**: Send the full document, do not truncate
+
+## Project Context
+
+This project extracts "Longer Run Target Federal Funds Rate" percentiles from NY Fed survey documents.
+
+### Data Priority
+1. XLSX files (most reliable)
+2. PDF files via LLM with direct PDF upload (gpt-5.2)
+3. PDF files via pdfplumber/OCR (legacy fallback)
+
+### PDF Extraction Notes
+
+When extracting from historical PDFs (2012-2016), tables often have TWO similar columns:
+- **"Longer Run"** - This is what we want (values ~3.5-4.0%)
+- **"10-yr Average FF Rate"** - Do NOT use (values ~2.5-3.0%)
+
+By sending the PDF directly (not extracted text), the LLM can visually see the table layout and correctly identify which column is which.

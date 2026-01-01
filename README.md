@@ -2,8 +2,6 @@
 
 A Python tool that extracts "Longer run target federal funds rate" percentiles (25th, median, 75th) from the New York Federal Reserve's Survey of Market Expectations.
 
-> **⚠️ Work in Progress**: PDF extraction for historical data (2011-2022) is still under development. Currently, XLSX extraction works reliably for 2023-2025 data. OpenAI-based PDF extraction is experimental.
-
 ## Overview
 
 This project scrapes the [NY Fed Survey of Market Expectations](https://www.newyorkfed.org/markets/market-intelligence/survey-of-market-expectations) page, downloads survey data files, and extracts the longer-run target federal funds rate percentile values into a tidy CSV format.
@@ -12,48 +10,23 @@ This project scrapes the [NY Fed Survey of Market Expectations](https://www.newy
 
 The NY Fed publishes survey results in multiple formats across different time periods:
 
-- **2025+**: Merged "Survey of Market Expectations" (SME) with optional dealer/participant split
-- **2014-2024**: Two separate surveys:
-  - SPD (Survey of Primary Dealers)
-  - SMP (Survey of Market Participants)
-- **Earlier years**: May be PDF-only
+- **2023+**: XLSX data files with structured data
+- **2014-2022**: PDF results documents (SPD and SMP surveys)
+- **2012-2013**: PDF results documents (combined survey)
 
 ### Extraction Strategy
 
 1. **XLSX preferred**: When a "Data" XLSX file exists, extract from it (most reliable)
-2. **PDF fallback**: Parse Results PDFs using text extraction (pdfplumber)
-3. **OCR fallback**: When PDF text extraction fails, use OCR (pytesseract)
-4. **OpenAI extraction** *(experimental)*: Use GPT-4.5 for PDF analysis
-
-### Current Status
-
-| Period | Data Format | Extraction Status |
-|--------|-------------|-------------------|
-| 2023-2025 | XLSX | ✅ Working |
-| 2014-2022 | XLSX + PDF | 🚧 In progress |
-| 2011-2013 | PDF only | 🚧 In progress |
+2. **PDF via LLM**: Send entire PDF to GPT-5.2 for visual table extraction (preserves layout)
 
 ## Installation
 
 ### Prerequisites
 
 - Python 3.9+
-- For OCR support: Tesseract OCR and Poppler
+- OpenAI API key (for PDF extraction)
 
-#### macOS
-
-```bash
-# Install Tesseract and Poppler for OCR support
-brew install tesseract poppler
-```
-
-#### Ubuntu/Debian
-
-```bash
-sudo apt-get install tesseract-ocr poppler-utils
-```
-
-### Python Dependencies
+### Setup
 
 ```bash
 # Clone or navigate to the project
@@ -65,59 +38,41 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
+
+# Set OpenAI API key for PDF extraction
+export OPENAI_API_KEY="your-key-here"
 ```
 
 ## Usage
 
-### Basic Usage
+### Run Full Pipeline
 
 ```bash
-# Run the full pipeline for years 2011-2025
-python -m src.pipeline
+# Step 1: Download all files (XLSX + PDF)
+python scripts/01_scrape_and_download.py --start-year 2011 --end-year 2025
 
-# Or with specific year range
-python -m src.pipeline --start-year 2020 --end-year 2025
+# Step 2: Extract from XLSX files
+python scripts/02_extract_xlsx.py
+
+# Step 3: Extract from PDFs using LLM (requires OPENAI_API_KEY)
+python scripts/03_extract_pdf_llm.py
+
+# Step 4: Combine data and generate plots
+python scripts/04_combine_and_plot.py
+
+# Or run all steps at once:
+python scripts/run_all.py
 ```
 
-### CLI Options
+### Output Files
 
-```bash
-python -m src.pipeline --help
-```
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `--start-year` | 2011 | Earliest year to include |
-| `--end-year` | 2025 | Latest year to include |
-| `--include-pdfs` | False | Download PDFs even when XLSX available |
-| `--use-openai` | False | Use OpenAI GPT-4.5 for PDF extraction |
-| `--data-dir` | `data_raw/` | Directory for downloaded files |
-| `--output-dir` | `data_out/` | Directory for output CSV |
-| `--output-file` | `nyfed_ff_longrun_percentiles.csv` | Output filename |
-| `--redownload` | False | Force re-download of existing files |
-| `--use-ocr` / `--no-ocr` | True | Enable/disable OCR for PDFs |
-| `--max-files` | None | Limit downloads (for testing) |
-| `--skip-download` | False | Skip download, use existing files |
-| `-v, --verbose` | False | Enable debug logging |
-
-### Examples
-
-```bash
-# Download and extract only 2024 data
-python -m src.pipeline --start-year 2024 --end-year 2024
-
-# Re-download all files (ignore cache)
-python -m src.pipeline --redownload
-
-# Process without OCR (faster, may miss some PDFs)
-python -m src.pipeline --no-ocr
-
-# Test with just 5 files
-python -m src.pipeline --max-files 5 --verbose
-
-# Use existing downloads, just re-extract
-python -m src.pipeline --skip-download
-```
+| File | Description |
+|------|-------------|
+| `data_out/xlsx_extracts.csv` | Data extracted from XLSX files |
+| `data_out/pdf_extracts.csv` | Data extracted from PDFs via LLM |
+| `data_out/nyfed_ff_longrun_percentiles.csv` | Combined final dataset |
+| `data_out/longrun_rate_chart.png` | Time series visualization |
+| `data_out/us_rstar_comparison.xlsx` | Comparison with Hartley (2024) data |
 
 ## Output Format
 
@@ -131,54 +86,60 @@ The output CSV (`data_out/nyfed_ff_longrun_percentiles.csv`) has the following c
 | `pctl25` | float | 25th percentile (%, e.g., 3.00) |
 | `pctl50` | float | Median/50th percentile (%) |
 | `pctl75` | float | 75th percentile (%) |
-| `source` | string | `xlsx`, `pdf_text`, or `pdf_ocr` |
-| `file_url` | string | Original URL of the source file |
+| `source` | string | `xlsx` or `pdf_llm` |
+| `file_url` | string | Relative path to source file |
 | `local_path` | string | Path to downloaded file |
 | `pdf_page` | int | Page number (PDF sources only) |
 | `notes` | string | Notes, e.g., `question_not_present` |
-
-### Sample Output
-
-```csv
-survey_date,panel,concept,pctl25,pctl50,pctl75,source,file_url,local_path,pdf_page,notes
-2025-01-01,Combined,ff_longer_run_target,3.0,3.13,3.25,xlsx,https://...,data_raw/sme_jan2025.xlsx,,
-2024-12-01,Dealer,ff_longer_run_target,3.0,3.13,3.25,xlsx,https://...,data_raw/spd_dec2024.xlsx,,
-2024-12-01,Participant,ff_longer_run_target,3.0,3.06,3.13,xlsx,https://...,data_raw/smp_dec2024.xlsx,,
-```
 
 ## Project Structure
 
 ```
 neutral-rate-survey/
-├── src/
+├── scripts/                       # Main extraction pipeline
+│   ├── 01_scrape_and_download.py  # Download all XLSX & PDF files
+│   ├── 02_extract_xlsx.py         # Extract data from XLSX files
+│   ├── 03_extract_pdf_llm.py      # Extract data from PDFs using GPT-5.2
+│   ├── 04_combine_and_plot.py     # Combine extracts & generate charts
+│   └── run_all.py                 # Run full pipeline
+├── src/                           # Shared utilities
 │   ├── __init__.py
-│   ├── utils.py           # Constants, data classes, utilities
-│   ├── scrape_manifest.py # Scrape survey page for file links
-│   ├── download.py        # Download XLSX/PDF files
-│   ├── extract_xlsx.py    # Parse XLSX files
-│   ├── extract_pdf.py     # Parse PDFs (text + OCR)
-│   └── pipeline.py        # CLI entrypoint
+│   ├── utils.py                   # Constants, data classes, utilities
+│   ├── scrape_manifest.py         # Scrape survey page for file links
+│   ├── download.py                # Download XLSX/PDF files
+│   └── extract_xlsx.py            # Parse XLSX files
+├── external_data/                 # Reference datasets
+│   └── Hartley2024_RStar_12312025.xlsx
 ├── tests/
-│   ├── __init__.py
-│   └── test_parsing.py    # Unit tests
-├── data_raw/              # Downloaded files (git-ignored)
-├── data_out/              # Output CSV (git-ignored)
+│   └── test_parsing.py            # Unit tests
+├── data_raw/                      # Downloaded files (git-ignored)
+├── data_out/                      # Output CSV & charts (git-ignored)
+├── .cursorrules                   # Cursor AI rules
 ├── requirements.txt
 └── README.md
 ```
 
-## Running Tests
+## Validation Against Hartley (2024)
 
-```bash
-# Run all tests
-pytest
+Our extracted data is validated against Hartley (2024), a comprehensive survey of r* estimates:
 
-# Run with coverage
-pytest --cov=src --cov-report=term-missing
+| Panel | Observations | Mean Abs Diff | Max Abs Diff |
+|-------|--------------|---------------|--------------|
+| Combined | 54 | 0.005% | 0.130% |
+| SPD | 65 | 0.019% | 0.190% |
+| SMP | 66 | 0.113% | 0.310% |
 
-# Run specific test file
-pytest tests/test_parsing.py -v
-```
+**Key finding:** SPD (Primary Dealers) data aligns most closely with Hartley's US series.
+
+### Reference
+
+> Hartley, Jonathan, *Survey Measures of the Natural Rate of Interest* (January 01, 2024). Available at SSRN: https://ssrn.com/abstract=5077514 or http://dx.doi.org/10.2139/ssrn.5077514
+
+The Hartley dataset (`external_data/Hartley2024_RStar_12312025.xlsx`) includes:
+- **US**: NY Fed Survey (2012-2025)
+- **UK**: Bank of England Market Participants Survey (2022-2025)
+- **Euro Area**: ECB Survey of Monetary Analysts (2021-2025)
+- **Canada**: Bank of Canada Market Participants Survey (2024-2025)
 
 ## Technical Details
 
@@ -191,71 +152,29 @@ The XLSX parser handles multiple data formats:
 3. **Panel detection**: Automatically detects SPD/SMP/Dealer/Participant columns
 4. **Format normalization**: Converts decimal form (0.0313) to percent (3.13)
 
-### PDF Parsing
+### PDF Extraction via LLM
 
-1. **Text extraction**: Uses pdfplumber to extract embedded text
-2. **Section finding**: Locates sections with "longer run" + "federal funds" keywords
-3. **Value extraction**: Regex patterns for "25th Pctl", "Median", "75th Pctl"
-4. **Table parsing**: Handles both vertical and horizontal table formats
-5. **OCR fallback**: Renders pages as images and runs pytesseract
+PDFs are sent directly to OpenAI's GPT-5.2 model (not text extraction) to preserve visual table layout:
 
-### Keyword Matching
+1. PDF encoded as base64 and sent via API
+2. Model visually identifies table structure
+3. Extracts from "Longer Run" column (not "10-yr Average FF Rate")
+4. Returns structured JSON with percentile values
 
-The tool uses flexible keyword matching that works regardless of question numbering:
-
-- "Longer run" variations: `longer run`, `longer-run`, `longrun`
-- "Federal funds" variations: `federal funds`, `fed funds`, `fftr`, `target rate`
-
-## Limitations
-
-1. **Historical coverage**: Early surveys (pre-2014) may have different formats not fully supported
-2. **OCR accuracy**: OCR may produce errors with low-quality scans or unusual fonts
-3. **Rate changes**: If the NY Fed significantly changes their file format or naming conventions, the scraper may need updates
-4. **Network dependency**: Requires internet access to scrape and download
-
-## Troubleshooting
-
-### "No meetings found"
-
-- Check your internet connection
-- The NY Fed page structure may have changed; inspect the page manually
-
-### "Failed to extract text from PDF"
-
-- Ensure poppler is installed for PDF rendering
-- Try with `--verbose` to see detailed error messages
-
-### "OCR dependencies not available"
+## Running Tests
 
 ```bash
-# macOS
-brew install tesseract poppler
-
-# Ubuntu/Debian  
-sudo apt-get install tesseract-ocr poppler-utils
-
-# Then reinstall Python packages
-pip install pdf2image pytesseract
+pytest tests/ -v
 ```
-
-### Missing percentiles (all None)
-
-- The longer-run question may not be present in that survey
-- Check the `notes` column for details
-- Manually inspect the source file
 
 ## License
 
-MIT License - see LICENSE file for details.
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Submit a pull request
+MIT License
 
 ## Acknowledgments
 
-Data source: [Federal Reserve Bank of New York](https://www.newyorkfed.org/)
+**Data Sources:**
+- [Federal Reserve Bank of New York - Survey of Market Expectations](https://www.newyorkfed.org/markets/market-intelligence/survey-of-market-expectations)
 
+**Reference Data:**
+- Hartley, Jonathan, *Survey Measures of the Natural Rate of Interest* (January 01, 2024). Available at SSRN: https://ssrn.com/abstract=5077514

@@ -273,9 +273,26 @@ def classify_survey_link(url: str, link_text: str) -> Optional[SurveyLink]:
 
 
 def get_local_path(url: str, data_dir: Path) -> Path:
-    """Generate a local file path for a downloaded file."""
+    """Generate a local file path for a downloaded file.
+    
+    Includes the year from the URL path to avoid filename collisions
+    (e.g., /2014/April_result.pdf vs /2013/April_result.pdf).
+    """
+    import re
+    
     # Extract filename from URL
     filename = url.split("/")[-1].split("?")[0]
+    
+    # Extract year from URL path (e.g., /2014/ or /2013/)
+    year_match = re.search(r'/(\d{4})/', url)
+    if year_match:
+        year = year_match.group(1)
+        # Check if filename already contains the year
+        if year not in filename:
+            # Prepend year to filename
+            name, ext = filename.rsplit(".", 1) if "." in filename else (filename, "")
+            filename = f"{year}-{name}.{ext}" if ext else f"{year}-{name}"
+    
     return data_dir / filename
 
 

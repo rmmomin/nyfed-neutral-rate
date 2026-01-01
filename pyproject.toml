@@ -47,9 +47,6 @@ all = [
     "nyfed-survey-extractor[ocr,dev]",
 ]
 
-[project.scripts]
-nyfed-extract = "src.pipeline:main"
-
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["src*"]
