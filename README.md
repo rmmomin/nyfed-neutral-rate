@@ -110,8 +110,6 @@ neutral-rate-survey/
 │   └── extract_xlsx.py            # Parse XLSX files
 ├── external_data/                 # Reference datasets
 │   └── Hartley2024_RStar_12312025.xlsx
-├── tests/
-│   └── test_parsing.py            # Unit tests
 ├── data_raw/                      # Downloaded files (git-ignored)
 ├── data_out/                      # Output CSV & charts (git-ignored)
 ├── .cursorrules                   # Cursor AI rules
@@ -160,12 +158,6 @@ PDFs are sent directly to OpenAI's GPT-5.2 model (not text extraction) to preser
 2. Model visually identifies table structure
 3. Extracts from "Longer Run" column (not "10-yr Average FF Rate")
 4. Returns structured JSON with percentile values
-
-## Running Tests
-
-```bash
-pytest tests/ -v
-```
 
 ## License
 
