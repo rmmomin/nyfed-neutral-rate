@@ -57,15 +57,15 @@ AGGREGATION_MAP = {
     "75th": "pctl75",
 }
 
-# Panel type mapping
+# Panel type mapping - normalize all to SPD/SMP/Combined
 PANEL_MAP = {
     "combined": PANEL_COMBINED,
     "all": PANEL_COMBINED,
     "total": PANEL_COMBINED,
-    "dealer": PANEL_DEALER,
+    "dealer": PANEL_SPD,  # Normalize "Dealer" to "SPD"
     "spd": PANEL_SPD,
     "primary_dealer": PANEL_SPD,
-    "participant": PANEL_PARTICIPANT,
+    "participant": PANEL_SMP,  # Normalize "Participant" to "SMP"
     "smp": PANEL_SMP,
     "market_participant": PANEL_SMP,
 }
