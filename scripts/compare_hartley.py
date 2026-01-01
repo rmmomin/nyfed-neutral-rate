@@ -1,26 +1,38 @@
 #!/usr/bin/env python3
 """
-Compare our extracted SPD data with Hartley (2024) US data.
+Compare our extracted data with Hartley (2024) US data.
 
+Uses SPD data for pre-July 2023, Combined data for July 2023+.
 Creates a comparison spreadsheet showing alignment and divergences.
 """
 
 import pandas as pd
 from pathlib import Path
+from datetime import datetime
 
 
 def main():
     print("=" * 60)
-    print("Comparing SPD data with Hartley (2024)")
+    print("Comparing our data with Hartley (2024)")
     print("=" * 60)
     
-    # Load our data - SPD only
+    # Load our data
     our_data = pd.read_csv("data_out/nyfed_ff_longrun_percentiles.csv", parse_dates=["survey_date"])
-    our_spd = our_data[our_data["panel"] == "SPD"].copy()
-    our_spd = our_spd.sort_values("survey_date")
     
-    print(f"Our SPD data: {len(our_spd)} observations")
-    print(f"  Date range: {our_spd['survey_date'].min().strftime('%Y-%m')} to {our_spd['survey_date'].max().strftime('%Y-%m')}")
+    # Use SPD for pre-July 2023, Combined for July 2023+
+    cutoff_date = datetime(2023, 7, 1)
+    
+    our_spd = our_data[(our_data["panel"] == "SPD") & (our_data["survey_date"] < cutoff_date)].copy()
+    our_combined = our_data[(our_data["panel"] == "Combined") & (our_data["survey_date"] >= cutoff_date)].copy()
+    
+    # Combine SPD (pre-Jul 2023) and Combined (Jul 2023+)
+    our_merged = pd.concat([our_spd, our_combined], ignore_index=True)
+    our_merged = our_merged.sort_values("survey_date")
+    
+    print(f"Our data: {len(our_merged)} observations")
+    print(f"  SPD (pre-Jul 2023): {len(our_spd)}")
+    print(f"  Combined (Jul 2023+): {len(our_combined)}")
+    print(f"  Date range: {our_merged['survey_date'].min().strftime('%Y-%m')} to {our_merged['survey_date'].max().strftime('%Y-%m')}")
     
     # Load Hartley data (header at row 2)
     hartley_path = Path("external_data/Hartley2024_RStar_12312025.xlsx")
@@ -52,9 +64,9 @@ def main():
     print(f"  Date range: {hartley_us['date'].min().strftime('%Y-%m')} to {hartley_us['date'].max().strftime('%Y-%m')}")
     
     # Prepare our data for merge
-    our_spd['date'] = our_spd['survey_date'].apply(lambda x: x.replace(day=1))
-    our_merge = our_spd[['date', 'pctl25', 'pctl50', 'pctl75', 'source']].copy()
-    our_merge.columns = ['date', 'our_p25', 'our_median', 'our_p75', 'source']
+    our_merged['date'] = our_merged['survey_date'].apply(lambda x: x.replace(day=1))
+    our_merge = our_merged[['date', 'pctl25', 'pctl50', 'pctl75', 'source', 'panel']].copy()
+    our_merge.columns = ['date', 'our_p25', 'our_median', 'our_p75', 'source', 'panel']
     
     # Merge
     comparison = pd.merge(hartley_us, our_merge, on='date', how='outer')
@@ -68,7 +80,7 @@ def main():
     matched = comparison[comparison['our_median'].notna() & comparison['hartley_median'].notna()]
     
     print(f"\n" + "=" * 60)
-    print("COMPARISON SUMMARY (SPD vs Hartley US)")
+    print("COMPARISON SUMMARY (SPD pre-Jul 2023, Combined Jul 2023+ vs Hartley US)")
     print("=" * 60)
     print(f"Matched observations: {len(matched)}")
     
@@ -107,6 +119,7 @@ def main():
     # Reorder columns
     output_df = output_df[[
         'date', 
+        'panel',
         'our_median', 'our_p25', 'our_p75',
         'hartley_median', 'hartley_p25', 'hartley_p75',
         'median_diff', 'abs_diff',
