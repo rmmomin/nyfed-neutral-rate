@@ -66,8 +66,9 @@ def determine_panel(filename: str, survey_date: datetime = None) -> str:
     if 'spd' in fn or 'dealer' in fn:
         return PANEL_SPD
     
-    # Check for SMP markers (includes "mp_" prefix used in 2014-2015)
-    if 'smp' in fn or 'participant' in fn or fn.startswith('mp-') or '-mp_' in fn or fn.startswith('mp_'):
+    # Check for SMP markers (includes "mp_" and "mp" patterns used in 2014-2016)
+    # Patterns: smp, participant, mp-, -mp_, mp_, -mp.pdf, -results-mp.pdf
+    if 'smp' in fn or 'participant' in fn or fn.startswith('mp-') or '-mp_' in fn or fn.startswith('mp_') or '-mp.pdf' in fn or '-results-mp' in fn:
         return PANEL_SMP
     
     # For dates before January 2014, only SPD existed
