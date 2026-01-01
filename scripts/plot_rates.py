@@ -2,8 +2,8 @@
 """
 Generate chart of longer-run federal funds rate expectations.
 
-Plots Combined panel where available. When only SPD/SMP exist,
-shows both as separate markers.
+SPD (Primary Dealers) shown as a continuous line.
+SMP and Combined shown as markers.
 """
 
 import pandas as pd
@@ -20,157 +20,108 @@ def main():
     # Filter to rows with valid median
     df = df[df["pctl50"].notna()].copy()
     
-    # Prepare data for plotting
-    combined_data = []
-    spd_only_data = []
-    smp_only_data = []
-    
-    for date, group in df.groupby("survey_date"):
-        panels = set(group["panel"].unique())
-        
-        if "Combined" in panels:
-            # Use Combined
-            row = group[group["panel"] == "Combined"].iloc[0]
-            combined_data.append({
-                "date": date,
-                "pctl25": row["pctl25"],
-                "pctl50": row["pctl50"],
-                "pctl75": row["pctl75"],
-            })
-        elif "SPD" in panels and "SMP" in panels:
-            # Both SPD and SMP but no Combined - plot separately
-            spd_row = group[group["panel"] == "SPD"].iloc[0]
-            smp_row = group[group["panel"] == "SMP"].iloc[0]
-            spd_only_data.append({
-                "date": date,
-                "pctl25": spd_row["pctl25"],
-                "pctl50": spd_row["pctl50"],
-                "pctl75": spd_row["pctl75"],
-            })
-            smp_only_data.append({
-                "date": date,
-                "pctl25": smp_row["pctl25"],
-                "pctl50": smp_row["pctl50"],
-                "pctl75": smp_row["pctl75"],
-            })
-        elif "SPD" in panels:
-            # Only SPD
-            row = group[group["panel"] == "SPD"].iloc[0]
-            combined_data.append({
-                "date": date,
-                "pctl25": row["pctl25"],
-                "pctl50": row["pctl50"],
-                "pctl75": row["pctl75"],
-            })
-        elif "SMP" in panels:
-            # Only SMP
-            row = group[group["panel"] == "SMP"].iloc[0]
-            combined_data.append({
-                "date": date,
-                "pctl25": row["pctl25"],
-                "pctl50": row["pctl50"],
-                "pctl75": row["pctl75"],
-            })
-    
-    df_combined = pd.DataFrame(combined_data).sort_values("date") if combined_data else pd.DataFrame()
-    df_spd = pd.DataFrame(spd_only_data).sort_values("date") if spd_only_data else pd.DataFrame()
-    df_smp = pd.DataFrame(smp_only_data).sort_values("date") if smp_only_data else pd.DataFrame()
+    # Separate data by panel type
+    df_spd = df[df["panel"] == "SPD"].copy().sort_values("survey_date")
+    df_smp = df[df["panel"] == "SMP"].copy().sort_values("survey_date")
+    df_combined = df[df["panel"] == "Combined"].copy().sort_values("survey_date")
     
     # Create figure
     fig, ax = plt.subplots(figsize=(14, 7), facecolor="white")
     ax.set_facecolor("white")
     
     # Color scheme
-    color_combined = "#1a5f7a"  # Deep teal
-    color_spd = "#e63946"       # Red
-    color_smp = "#2a9d8f"       # Teal green
+    color_spd = "#1a5f7a"       # Deep teal for SPD line
+    color_smp = "#2a9d8f"       # Teal green for SMP markers
+    color_combined = "#e63946"  # Red for Combined markers
     
-    # Plot Combined/single panel data
-    if not df_combined.empty:
-        # IQR shading
+    # Plot SPD as continuous line with IQR shading
+    if not df_spd.empty:
+        # IQR shading for SPD
         ax.fill_between(
-            df_combined["date"], 
-            df_combined["pctl25"], 
-            df_combined["pctl75"],
+            df_spd["survey_date"], 
+            df_spd["pctl25"], 
+            df_spd["pctl75"],
             alpha=0.2, 
-            color=color_combined,
-            label="25th-75th Percentile"
+            color=color_spd,
+            label="SPD 25th-75th Pctl"
         )
         
         # 25th and 75th as dotted lines
         ax.plot(
-            df_combined["date"], 
-            df_combined["pctl25"],
+            df_spd["survey_date"], 
+            df_spd["pctl25"],
             linestyle=":", 
-            linewidth=1.5, 
-            color=color_combined,
-            alpha=0.7
+            linewidth=1.2, 
+            color=color_spd,
+            alpha=0.6
         )
         ax.plot(
-            df_combined["date"], 
-            df_combined["pctl75"],
+            df_spd["survey_date"], 
+            df_spd["pctl75"],
             linestyle=":", 
-            linewidth=1.5, 
-            color=color_combined,
-            alpha=0.7
+            linewidth=1.2, 
+            color=color_spd,
+            alpha=0.6
         )
         
-        # Median as solid line
+        # SPD Median as solid line
         ax.plot(
-            df_combined["date"], 
-            df_combined["pctl50"],
+            df_spd["survey_date"], 
+            df_spd["pctl50"],
             linestyle="-", 
             linewidth=2.5, 
-            color=color_combined,
+            color=color_spd,
             marker="o",
             markersize=3,
-            label="Median (Combined/Single)"
+            label="SPD Median"
         )
     
-    # Plot SPD-only dates
-    if not df_spd.empty:
-        ax.scatter(
-            df_spd["date"], 
-            df_spd["pctl50"],
-            color=color_spd,
-            marker="^",
-            s=60,
-            zorder=5,
-            label="SPD Median",
-            edgecolors="white",
-            linewidths=0.5
-        )
-        # Vertical lines for IQR
-        for _, row in df_spd.iterrows():
-            ax.plot(
-                [row["date"], row["date"]], 
-                [row["pctl25"], row["pctl75"]],
-                color=color_spd,
-                linewidth=1.5,
-                alpha=0.5
-            )
-    
-    # Plot SMP-only dates  
+    # Plot SMP as markers
     if not df_smp.empty:
         ax.scatter(
-            df_smp["date"], 
+            df_smp["survey_date"], 
             df_smp["pctl50"],
             color=color_smp,
             marker="v",
-            s=60,
+            s=50,
             zorder=5,
             label="SMP Median",
             edgecolors="white",
-            linewidths=0.5
+            linewidths=0.5,
+            alpha=0.8
         )
         # Vertical lines for IQR
         for _, row in df_smp.iterrows():
             ax.plot(
-                [row["date"], row["date"]], 
+                [row["survey_date"], row["survey_date"]], 
                 [row["pctl25"], row["pctl75"]],
                 color=color_smp,
-                linewidth=1.5,
-                alpha=0.5
+                linewidth=1.2,
+                alpha=0.4
+            )
+    
+    # Plot Combined as markers
+    if not df_combined.empty:
+        ax.scatter(
+            df_combined["survey_date"], 
+            df_combined["pctl50"],
+            color=color_combined,
+            marker="s",
+            s=50,
+            zorder=5,
+            label="Combined Median",
+            edgecolors="white",
+            linewidths=0.5,
+            alpha=0.8
+        )
+        # Vertical lines for IQR
+        for _, row in df_combined.iterrows():
+            ax.plot(
+                [row["survey_date"], row["survey_date"]], 
+                [row["pctl25"], row["pctl75"]],
+                color=color_combined,
+                linewidth=1.2,
+                alpha=0.4
             )
     
     # Formatting
@@ -198,7 +149,7 @@ def main():
     
     # Y-axis limits
     all_values = []
-    for data in [df_combined, df_spd, df_smp]:
+    for data in [df_spd, df_smp, df_combined]:
         if not data.empty:
             all_values.extend(data["pctl25"].dropna().tolist())
             all_values.extend(data["pctl50"].dropna().tolist())
@@ -213,10 +164,10 @@ def main():
     ax.legend(loc="upper right", framealpha=0.95, fontsize=10)
     
     # Source note
-    total_dates = len(df_combined) + len(df_spd)
+    total_surveys = len(df_spd) + len(df_smp) + len(df_combined)
     ax.text(
         0.01, 0.02,
-        f"Source: NY Fed Survey of Primary Dealers & Market Participants | n={total_dates} surveys",
+        f"Source: NY Fed Survey of Primary Dealers & Market Participants | n={total_surveys} observations",
         transform=ax.transAxes,
         fontsize=9,
         color="#666666",
@@ -231,11 +182,10 @@ def main():
     plt.close()
     
     print(f"Chart saved to {output_path}")
-    print(f"  Combined/single panel points: {len(df_combined)}")
-    print(f"  SPD-only points: {len(df_spd)}")
-    print(f"  SMP-only points: {len(df_smp)}")
+    print(f"  SPD points: {len(df_spd)}")
+    print(f"  SMP points: {len(df_smp)}")
+    print(f"  Combined points: {len(df_combined)}")
 
 
 if __name__ == "__main__":
     main()
-
