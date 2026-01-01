@@ -52,13 +52,23 @@ def get_client() -> Optional[OpenAI]:
     return OpenAI(api_key=api_key, timeout=API_TIMEOUT)
 
 
-def determine_panel(filename: str) -> str:
-    """Determine panel type from filename."""
+def determine_panel(filename: str, survey_date: datetime = None) -> str:
+    """Determine panel type from filename and date.
+    
+    Note: SMP (Survey of Market Participants) was introduced in November 2016.
+    Before that, only SPD (Survey of Primary Dealers) existed.
+    """
     fn = filename.lower()
     if 'spd' in fn or 'dealer' in fn:
         return PANEL_SPD
     elif 'smp' in fn or 'participant' in fn:
         return PANEL_SMP
+    
+    # For dates before November 2016, only SPD existed
+    # So if no explicit panel marker, it's SPD
+    if survey_date and survey_date < datetime(2016, 11, 1):
+        return PANEL_SPD
+    
     return PANEL_COMBINED
 
 
@@ -185,8 +195,6 @@ def parse_survey_date(result: dict, filename: str) -> datetime:
 def process_pdf(filepath: Path, client: OpenAI, xlsx_dates: Set[str]) -> Optional[ExtractedPercentile]:
     """Process a single PDF file."""
     
-    panel = determine_panel(filepath.name)
-    
     # Call LLM with entire PDF
     result = call_llm_with_pdf(client, filepath)
     
@@ -195,6 +203,9 @@ def process_pdf(filepath: Path, client: OpenAI, xlsx_dates: Set[str]) -> Optiona
     
     # Parse date from LLM result
     survey_date = parse_survey_date(result, filepath.name)
+    
+    # Determine panel based on filename and date
+    panel = determine_panel(filepath.name, survey_date)
     
     # Check if we already have XLSX data for this date
     date_key = survey_date.strftime("%Y-%m")
