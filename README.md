@@ -57,7 +57,7 @@ python scripts/02_extract_xlsx.py
 # Step 3: Extract from PDFs using LLM (requires OPENAI_API_KEY)
 python scripts/03_extract_pdf_llm.py
 
-# Step 4: Combine data and generate plots
+# Step 4: Combine data
 python scripts/04_combine_and_plot.py
 
 # Or run all steps at once:
@@ -71,7 +71,6 @@ python scripts/run_all.py
 | `data_out/xlsx_extracts.csv` | Data extracted from XLSX files |
 | `data_out/pdf_extracts.csv` | Data extracted from PDFs via LLM |
 | `data_out/nyfed_ff_longrun_percentiles.csv` | Combined final dataset |
-| `data_out/longrun_rate_chart.png` | Time series visualization |
 | `data_out/us_rstar_comparison.xlsx` | Comparison with Hartley (2024) data |
 
 ## Output Format
@@ -100,7 +99,7 @@ neutral-rate-survey/
 │   ├── 01_scrape_and_download.py  # Download all XLSX & PDF files
 │   ├── 02_extract_xlsx.py         # Extract data from XLSX files
 │   ├── 03_extract_pdf_llm.py      # Extract data from PDFs using GPT-5.2
-│   ├── 04_combine_and_plot.py     # Combine extracts & generate charts
+│   ├── 04_combine_and_plot.py     # Combine extracts into final CSV
 │   └── run_all.py                 # Run full pipeline
 ├── src/                           # Shared utilities
 │   ├── __init__.py
@@ -111,7 +110,7 @@ neutral-rate-survey/
 ├── external_data/                 # Reference datasets
 │   └── Hartley2024_RStar_12312025.xlsx
 ├── data_raw/                      # Downloaded files (git-ignored)
-├── data_out/                      # Output CSV & charts (git-ignored)
+├── data_out/                      # Output CSV files (git-ignored)
 ├── .cursorrules                   # Cursor AI rules
 ├── requirements.txt
 └── README.md

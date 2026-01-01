@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Run the complete pipeline: download, extract, combine, and plot.
+Run the complete pipeline: download, extract, and combine data.
 
 Usage:
     export OPENAI_API_KEY="your-key"
@@ -49,15 +49,13 @@ def main():
     # Step 3: Extract from PDF with LLM
     run_step(str(scripts_dir / "03_extract_pdf_llm.py"))
     
-    # Step 4: Combine and plot
+    # Step 4: Combine data
     run_step(str(scripts_dir / "04_combine_and_plot.py"))
     
     print("\n" + "="*60)
     print("PIPELINE COMPLETE!")
     print("="*60)
-    print("Outputs:")
-    print("  - data_out/nyfed_ff_longrun_percentiles.csv")
-    print("  - data_out/longrun_rate_chart.png")
+    print("Output: data_out/nyfed_ff_longrun_percentiles.csv")
     print("="*60 + "\n")
 
 
