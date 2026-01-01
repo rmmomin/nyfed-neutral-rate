@@ -55,17 +55,28 @@ def get_client() -> Optional[OpenAI]:
 def determine_panel(filename: str, survey_date: datetime = None) -> str:
     """Determine panel type from filename and date.
     
-    Note: SMP (Survey of Market Participants) was introduced in November 2016.
-    Before that, only SPD (Survey of Primary Dealers) existed.
+    Note: SMP (Survey of Market Participants) started in January 2014.
+    File naming conventions:
+    - 2014-2015: "mp_" prefix for Market Participants
+    - 2016+: "smp" or "SMP" in filename
     """
     fn = filename.lower()
+    
+    # Check for SPD markers
     if 'spd' in fn or 'dealer' in fn:
         return PANEL_SPD
-    elif 'smp' in fn or 'participant' in fn:
+    
+    # Check for SMP markers (includes "mp_" prefix used in 2014-2015)
+    if 'smp' in fn or 'participant' in fn or fn.startswith('mp-') or '-mp_' in fn or fn.startswith('mp_'):
         return PANEL_SMP
     
-    # For dates before November 2016, only SPD existed
-    # So if no explicit panel marker, it's SPD
+    # For dates before January 2014, only SPD existed
+    # If no explicit panel marker and before SMP launch, it's SPD
+    if survey_date and survey_date < datetime(2014, 1, 1):
+        return PANEL_SPD
+    
+    # For dates between Jan 2014 and Nov 2016 without markers, assume SPD
+    # (the primary dealer survey, as SMP files have mp_ prefix)
     if survey_date and survey_date < datetime(2016, 11, 1):
         return PANEL_SPD
     
