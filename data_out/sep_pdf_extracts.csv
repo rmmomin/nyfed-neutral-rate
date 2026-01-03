@@ -1,0 +1,51 @@
+meeting_date,horizon,n,p25,p50,p75,source,file_path,page,notes
+2007-10-01,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20071031SEPcompilation.pdf,,Figure 2 with the federal funds rate dot plot is not present in the document.
+2014-03-01,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20080130SEPcompilation.pdf,,The document does not contain Figure 2 with a federal funds rate dot plot for the 'Longer run' column.
+2008-04-30,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20080430SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2008-06-01,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20080625SEPcompilation.pdf,,The document does not contain a Figure 2 with a federal funds rate dot plot for the 'Longer run' projections.
+2008-10-29,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20081029SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2009-01-28,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20090128SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2009-04-29,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20090429SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2014-03-01,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20090624SEPcompilation.pdf,,Figure 2 with the federal funds rate dot plot is not present in the provided document.
+2009-11-04,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20091104SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2010-01-27,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20100127SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2010-04-28,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20100428SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2010-06-23,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20100623SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2010-11-01,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20101103SEPcompilation.pdf,,The document does not contain a Figure 2 with a federal funds rate dot plot for the 'Longer run' column.
+2011-01-26,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20110126SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2011-04-27,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20110427SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2011-06-22,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20110622SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2011-11-02,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20111102SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2012-01-01,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20120125SEPcompilation.pdf,,Figure 2 does not contain a 'Longer run' column with rate levels to count.
+2012-04-25,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20120425SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2012-06-20,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20120620SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2012-09-13,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20120913SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2012-12-12,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20121212SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2013-03-20,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20130320SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2013-06-19,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20130619SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2014-03-01,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20130918SEPcompilation.pdf,,Figure 2 with the federal funds rate dot plot is not available in the provided document.
+2013-12-18,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20131218SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2014-03-19,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20140319SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2014-03-01,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20140618SEPcompilation.pdf,,Figure 2 is not available in the provided document pages.
+2014-09-17,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20140917SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2014-12-17,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20141217SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2015-03-18,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20150318SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2015-06-17,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20150617SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2015-09-01,Longer run,17,3.25,3.5,3.75,sep_pdf,data_raw/sep/FOMC20150917SEPcompilation.pdf,10,
+2015-12-16,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20151216SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2016-03-16,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20160316SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2016-06-15,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20160615SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2016-09-21,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20160921SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2016-12-14,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20161214SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2017-03-01,Longer run,15,2.75,3.0,3.0,sep_pdf,data_raw/sep/FOMC20170315SEPcompilation.pdf,7,
+2017-06-14,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20170614SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2017-09-20,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20170920SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2017-12-13,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20171213SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2018-03-21,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20180321SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2018-06-13,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20180613SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2018-09-01,Longer run,16,2.75,2.875,3.0,sep_pdf,data_raw/sep/FOMC20180926SEPcompilation.pdf,8,
+2018-12-19,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20181219SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2019-03-20,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20190320SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2019-06-19,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20190619SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2019-09-18,Longer run,,,,,sep_pdf,data_raw/sep/FOMC20190918SEPcompilation.pdf,,Error code: 429 - {'error': {'message': 'Rate limit reached for gpt-4o in organization org-m0MDc8Q9h
+2019-12-01,Longer run,15,2.5,2.5,2.625,sep_pdf,data_raw/sep/FOMC20191211SEPcompilation.pdf,8,

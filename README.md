@@ -149,6 +149,28 @@ The Hartley dataset (`external_data/Hartley2024_RStar_12312025.xlsx`) includes:
 - **Euro Area**: ECB Survey of Monetary Analysts (2021-2025)
 - **Canada**: Bank of Canada Market Participants Survey (2024-2025)
 
+## FOMC SEP Longer-Run Rate Estimates
+
+![FOMC SEP Longer-Run Federal Funds Rate](data_out/sep_longrun_chart.png)
+
+This chart shows FOMC participants' longer-run federal funds rate estimates from the Summary of Economic Projections (SEP). The data is extracted from the Fed's SEP dot plot publications.
+
+### SEP Pipeline
+
+```bash
+python scripts/sep_run_all.py
+```
+
+### SEP Output Files
+
+| File | Description |
+|------|-------------|
+| `data_out/sep_dots.csv` | Raw individual dot values by meeting date and horizon |
+| `data_out/sep_summary.csv` | Aggregated percentiles (p25, p50, p75) by meeting date |
+| `data_out/sep_longrun_chart.png` | Time series chart of longer-run estimates |
+
+**Note:** Historical PDF extraction (2012-2019) is in progress. The chart currently shows 2020+ data from HTML sources.
+
 ## Technical Details
 
 ### XLSX Parsing
