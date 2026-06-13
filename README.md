@@ -41,7 +41,9 @@ pip install -r requirements.txt
 
 # Set OpenAI API key for PDF extraction
 export OPENAI_API_KEY="your-key-here"
-# Or add OPENAI_API_KEY=... to a local .env file
+# Set FRED API key for FRED SEP series
+export FRED_API_KEY="your-key-here"
+# Or add OPENAI_API_KEY=... and FRED_API_KEY=... to a local .env file
 ```
 
 ## Usage
@@ -69,6 +71,9 @@ python scripts/run_all.py
 
 # After the NY Fed and SEP outputs are current, build the real-time comparison chart:
 python scripts/plot_realtime_sep_vs_market.py
+
+# Pull FRED SEP longer-run fed funds median/central tendency series and build the chart:
+python scripts/fred_fed_funds_central_tendency.py
 ```
 
 PDF extraction scripts reuse existing CSV outputs as a cache. By default they
@@ -85,6 +90,9 @@ rows without medians or `--force` to reprocess everything.
 | `data_out/nyfed_ff_longrun_percentiles.csv` | Combined final dataset |
 | `data_out/realtime_sep_vs_market.csv` | SEP vintages aligned to the latest market survey available by receipt date |
 | `data_out/realtime_sep_vs_market.png` | Real-time SEP vs market expectations chart |
+| `data_out/fred_fed_funds_central_tendency.csv` | FRED SEP longer-run fed funds median and central tendency series |
+| `data_out/fred_fed_funds_central_tendency_metadata.csv` | FRED metadata for the longer-run fed funds series |
+| `data_out/fred_fed_funds_central_tendency.png` | FRED SEP longer-run fed funds chart |
 | `data_out/us_rstar_comparison.xlsx` | Comparison with Hartley (2024) data |
 
 ## Output Format
@@ -117,6 +125,7 @@ neutral-rate-survey/
 │   ├── 02_extract_xlsx.py         # Extract data from XLSX files
 │   ├── 03_extract_pdf_llm.py      # Extract data from PDFs using GPT-5.2
 │   ├── 04_combine_and_plot.py     # Combine extracts into final CSV
+│   ├── fred_fed_funds_central_tendency.py # Pull FRED SEP central tendency series
 │   ├── plot_realtime_sep_vs_market.py # Compare SEP vintages to market expectations
 │   └── run_all.py                 # Run full pipeline
 ├── src/                           # Shared utilities
@@ -186,12 +195,32 @@ python scripts/sep_run_all.py
 | `data_out/sep_dots.csv` | Raw individual dot values by meeting date and horizon |
 | `data_out/sep_summary.csv` | Aggregated percentiles (p25, p50, p75) by meeting date |
 | `data_out/sep_longrun_chart.png` | Time series chart of longer-run estimates |
+| `data_out/fred_fed_funds_central_tendency.csv` | FRED longer-run series: FEDTARMDLR, FEDTARCTLLR, FEDTARCTMLR, FEDTARCTHLR |
+| `data_out/fred_fed_funds_central_tendency_metadata.csv` | FRED metadata for the longer-run fed funds series |
+| `data_out/fred_fed_funds_central_tendency.png` | FRED longer-run fed funds median and central tendency chart |
 
 **Note:** Historical PDF extraction (2012-2019) is in progress. The chart currently shows 2020+ data from HTML sources.
 
 SEP outputs include `data_vintage_date`, which is the FOMC statement and SEP
 release date. For current HTML projection tables and historical SEP PDFs, this
 matches `meeting_date`.
+
+### FRED Longer-Run Fed Funds Central Tendency
+
+![FRED FOMC SEP Longer-Run Fed Funds Rate](data_out/fred_fed_funds_central_tendency.png)
+
+```bash
+python scripts/fred_fed_funds_central_tendency.py
+```
+
+This pulls FRED series `FEDTARMDLR`, `FEDTARCTLLR`, `FEDTARCTMLR`, and
+`FEDTARCTHLR`, which are the FOMC SEP longer-run fed funds rate median and
+central tendency low, midpoint, and high. FRED publishes these observations by
+SEP release date. The median series starts in 2012; the central tendency series
+start in 2015.
+
+The chart plots `FEDTARMDLR` and `FEDTARCTMLR` as separate lines, with the
+central tendency bounds shaded between `FEDTARCTLLR` and `FEDTARCTHLR`.
 
 ## Real-Time SEP vs Market Expectations
 
