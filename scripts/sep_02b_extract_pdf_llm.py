@@ -35,7 +35,19 @@ RATE_LIMIT_DELAY = 3.0  # seconds between API calls (increased for rate limits)
 API_TIMEOUT = 120  # seconds
 MAX_RETRIES = 3  # Number of retries on rate limit errors
 
-FIELDNAMES = ["meeting_date", "horizon", "n", "p25", "p50", "p75", "source", "file_path", "page", "notes"]
+FIELDNAMES = [
+    "meeting_date",
+    "data_vintage_date",
+    "horizon",
+    "n",
+    "p25",
+    "p50",
+    "p75",
+    "source",
+    "file_path",
+    "page",
+    "notes",
+]
 
 
 def load_dotenv(path: Path = Path(".env")) -> None:
@@ -73,6 +85,8 @@ def load_cached_results(output_path: Path) -> Dict[str, Dict]:
         key = cache_key_from_path(row.get("file_path", ""))
         if key:
             row["meeting_date"] = parse_meeting_date({}, key).strftime("%Y-%m-%d")
+            if not row.get("data_vintage_date"):
+                row["data_vintage_date"] = row["meeting_date"]
             cached[key] = row
     return cached
 
@@ -257,6 +271,7 @@ def process_pdf(filepath: Path, client: OpenAI) -> Optional[Dict]:
     if not result.get("found"):
         return {
             "meeting_date": meeting_date.strftime("%Y-%m-%d"),
+            "data_vintage_date": meeting_date.strftime("%Y-%m-%d"),
             "horizon": "Longer run",
             "n": None,
             "p25": None,
@@ -274,6 +289,7 @@ def process_pdf(filepath: Path, client: OpenAI) -> Optional[Dict]:
 
     return {
         "meeting_date": meeting_date.strftime("%Y-%m-%d"),
+        "data_vintage_date": meeting_date.strftime("%Y-%m-%d"),
         "horizon": "Longer run",
         "n": percentiles["n"],
         "p25": percentiles["p25"],

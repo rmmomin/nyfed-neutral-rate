@@ -183,6 +183,10 @@ python scripts/sep_run_all.py
 
 **Note:** Historical PDF extraction (2012-2019) is in progress. The chart currently shows 2020+ data from HTML sources.
 
+SEP outputs include `data_vintage_date`, which is the FOMC statement and SEP
+release date. For current HTML projection tables and historical SEP PDFs, this
+matches `meeting_date`.
+
 ## Technical Details
 
 ### XLSX Parsing

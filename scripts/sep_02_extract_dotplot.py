@@ -145,8 +145,8 @@ def build_sep_dotplot_panel(proj_urls: List[str]) -> Tuple[pd.DataFrame, pd.Data
     Process all SEP pages and build dot panel + summary panel.
 
     Returns:
-      dots_panel: meeting_date, horizon, dot_value
-      summary_panel: meeting_date, horizon, n, p25, p50, p75
+      dots_panel: meeting_date, data_vintage_date, horizon, dot_value
+      summary_panel: meeting_date, data_vintage_date, horizon, n, p25, p50, p75
     """
     dots_all = []
     summ_all = []
@@ -165,8 +165,12 @@ def build_sep_dotplot_panel(proj_urls: List[str]) -> Tuple[pd.DataFrame, pd.Data
         if dots.empty:
             continue
 
+        # SEP projection materials are released with the FOMC statement, so the
+        # projection table date is also the real-time data vintage date.
+        dots.insert(0, "data_vintage_date", dt)
         dots.insert(0, "meeting_date", dt)
         summ = summarize_dots(dots)
+        summ.insert(0, "data_vintage_date", dt)
         summ.insert(0, "meeting_date", dt)
 
         dots_all.append(dots)

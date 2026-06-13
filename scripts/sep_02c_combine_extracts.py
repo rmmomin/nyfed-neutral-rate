@@ -39,6 +39,8 @@ def main():
         df_pdf = pd.read_csv(pdf_path, parse_dates=["meeting_date"])
         # Filter to only valid extracts with data
         df_pdf = df_pdf[df_pdf["p50"].notna()].copy()
+        if "data_vintage_date" not in df_pdf.columns:
+            df_pdf["data_vintage_date"] = df_pdf["meeting_date"]
         if not df_html.empty:
             first_html_date = df_html["meeting_date"].min()
             df_pdf = df_pdf[df_pdf["meeting_date"] < first_html_date].copy()
@@ -57,12 +59,14 @@ def main():
         print(f"  Backed up HTML data to {backup_path}")
 
     # Standardize columns for merge
-    common_cols = ["meeting_date", "horizon", "n", "p25", "p50", "p75", "source"]
+    common_cols = ["meeting_date", "data_vintage_date", "horizon", "n", "p25", "p50", "p75", "source"]
 
     if not df_html.empty:
         # Ensure HTML has source column
         if "source" not in df_html.columns:
             df_html["source"] = "html"
+        if "data_vintage_date" not in df_html.columns:
+            df_html["data_vintage_date"] = df_html["meeting_date"]
         df_html = df_html[common_cols].copy()
 
     if not df_pdf.empty:
