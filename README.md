@@ -66,6 +66,9 @@ python scripts/04_combine_and_plot.py
 
 # Or run all steps at once:
 python scripts/run_all.py
+
+# After the NY Fed and SEP outputs are current, build the real-time comparison chart:
+python scripts/plot_realtime_sep_vs_market.py
 ```
 
 PDF extraction scripts reuse existing CSV outputs as a cache. By default they
@@ -80,6 +83,8 @@ rows without medians or `--force` to reprocess everything.
 | `data_out/pdf_extracts.csv` | Data extracted from PDFs via LLM |
 | `data_out/nyfed_survey_receipt_dates.csv` | Survey distributed and received-by dates extracted from PDF headers |
 | `data_out/nyfed_ff_longrun_percentiles.csv` | Combined final dataset |
+| `data_out/realtime_sep_vs_market.csv` | SEP vintages aligned to the latest market survey available by receipt date |
+| `data_out/realtime_sep_vs_market.png` | Real-time SEP vs market expectations chart |
 | `data_out/us_rstar_comparison.xlsx` | Comparison with Hartley (2024) data |
 
 ## Output Format
@@ -112,6 +117,7 @@ neutral-rate-survey/
 │   ├── 02_extract_xlsx.py         # Extract data from XLSX files
 │   ├── 03_extract_pdf_llm.py      # Extract data from PDFs using GPT-5.2
 │   ├── 04_combine_and_plot.py     # Combine extracts into final CSV
+│   ├── plot_realtime_sep_vs_market.py # Compare SEP vintages to market expectations
 │   └── run_all.py                 # Run full pipeline
 ├── src/                           # Shared utilities
 │   ├── __init__.py
@@ -186,6 +192,26 @@ python scripts/sep_run_all.py
 SEP outputs include `data_vintage_date`, which is the FOMC statement and SEP
 release date. For current HTML projection tables and historical SEP PDFs, this
 matches `meeting_date`.
+
+## Real-Time SEP vs Market Expectations
+
+![Real-Time SEP vs Market Longer-Run Rate Expectations](data_out/realtime_sep_vs_market.png)
+
+This chart compares each SEP longer-run federal funds rate vintage with the
+latest NY Fed survey expectations that were available by that SEP release date.
+Market availability is determined using `received_by_date <= data_vintage_date`,
+so the comparison avoids looking ahead to later surveys.
+
+The top panel plots SEP and market medians. The bottom panel plots the real-time
+market-minus-SEP gap in basis points, with a +/-25 bp band for quick anchoring
+checks.
+
+### Real-Time Comparison Output Files
+
+| File | Description |
+|------|-------------|
+| `data_out/realtime_sep_vs_market.csv` | One row per SEP vintage and available market survey panel |
+| `data_out/realtime_sep_vs_market.png` | Two-panel chart of market expectations versus the SEP |
 
 ## Technical Details
 
