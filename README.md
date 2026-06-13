@@ -58,7 +58,10 @@ python scripts/02_extract_xlsx.py
 # Step 3: Extract from PDFs using LLM (requires OPENAI_API_KEY)
 python scripts/03_extract_pdf_llm.py
 
-# Step 4: Combine data
+# Step 4: Extract survey receipt deadlines from PDFs
+python scripts/extract_survey_receipt_dates.py
+
+# Step 5: Combine data
 python scripts/04_combine_and_plot.py
 
 # Or run all steps at once:
@@ -75,6 +78,7 @@ rows without medians or `--force` to reprocess everything.
 |------|-------------|
 | `data_out/xlsx_extracts.csv` | Data extracted from XLSX files |
 | `data_out/pdf_extracts.csv` | Data extracted from PDFs via LLM |
+| `data_out/nyfed_survey_receipt_dates.csv` | Survey distributed and received-by dates extracted from PDF headers |
 | `data_out/nyfed_ff_longrun_percentiles.csv` | Combined final dataset |
 | `data_out/us_rstar_comparison.xlsx` | Comparison with Hartley (2024) data |
 
@@ -86,6 +90,8 @@ The output CSV (`data_out/nyfed_ff_longrun_percentiles.csv`) has the following c
 |--------|------|-------------|
 | `survey_date` | YYYY-MM-DD | Date of the survey (first of month) |
 | `panel` | string | SPD, SMP, Dealer, Participant, or Combined |
+| `distributed_date` | YYYY-MM-DD | Date the survey was distributed |
+| `received_by_date` | YYYY-MM-DD | Date survey responses were due/received by |
 | `concept` | string | Always `ff_longer_run_target` |
 | `pctl25` | float | 25th percentile (%, e.g., 3.00) |
 | `pctl50` | float | Median/50th percentile (%) |
@@ -94,6 +100,7 @@ The output CSV (`data_out/nyfed_ff_longrun_percentiles.csv`) has the following c
 | `file_url` | string | Relative path to source file |
 | `local_path` | string | Path to downloaded file |
 | `pdf_page` | int | Page number (PDF sources only) |
+| `receipt_source_file` | string | PDF used to extract distributed/received-by dates |
 | `notes` | string | Notes, e.g., `question_not_present` |
 
 ## Project Structure

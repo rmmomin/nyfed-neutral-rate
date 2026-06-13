@@ -45,8 +45,11 @@ def main():
     
     # Step 3: Extract from PDF with LLM
     run_step(str(scripts_dir / "03_extract_pdf_llm.py"))
+
+    # Step 4: Extract survey distribution/receipt metadata
+    run_step(str(scripts_dir / "extract_survey_receipt_dates.py"))
     
-    # Step 4: Combine data
+    # Step 5: Combine data
     run_step(str(scripts_dir / "04_combine_and_plot.py"))
     
     print("\n" + "="*60)

@@ -65,8 +65,9 @@ def main():
     
     # Prepare our data for merge
     our_merged['date'] = our_merged['survey_date'].apply(lambda x: x.replace(day=1))
-    our_merge = our_merged[['date', 'pctl25', 'pctl50', 'pctl75', 'source', 'panel']].copy()
-    our_merge.columns = ['date', 'our_p25', 'our_median', 'our_p75', 'source', 'panel']
+    metadata_cols = [col for col in ["distributed_date", "received_by_date", "receipt_source_file"] if col in our_merged.columns]
+    our_merge = our_merged[['date', 'pctl25', 'pctl50', 'pctl75', 'source', 'panel'] + metadata_cols].copy()
+    our_merge.columns = ['date', 'our_p25', 'our_median', 'our_p75', 'source', 'panel'] + metadata_cols
     
     # Merge
     comparison = pd.merge(hartley_us, our_merge, on='date', how='outer')
@@ -120,6 +121,7 @@ def main():
     output_df = output_df[[
         'date', 
         'panel',
+        *metadata_cols,
         'our_median', 'our_p25', 'our_p75',
         'hartley_median', 'hartley_p25', 'hartley_p75',
         'median_diff', 'abs_diff',
