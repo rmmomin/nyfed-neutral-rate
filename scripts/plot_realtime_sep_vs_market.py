@@ -15,10 +15,15 @@ Outputs:
 """
 
 from pathlib import Path
+import sys
 
 import matplotlib.dates as mdates
 import matplotlib.pyplot as plt
 import pandas as pd
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.chart_style import add_chart_footer
 
 
 PANEL_ORDER = ["SPD", "SMP", "Combined"]
@@ -190,7 +195,13 @@ def plot_realtime_alignment(sep: pd.DataFrame, aligned: pd.DataFrame, output_pat
     ax_top.legend(loc="upper left", framealpha=0.95, fontsize=9, ncol=2)
     ax_gap.legend(loc="upper left", framealpha=0.95, fontsize=9, ncol=4)
 
-    plt.tight_layout()
+    add_chart_footer(
+        fig,
+        "Sources: Federal Reserve Summary of Economic Projections; NY Fed Survey of "
+        "Primary Dealers and Survey of Market Participants; author's calculations.",
+    )
+
+    plt.tight_layout(rect=(0, 0.055, 1, 1))
     plt.savefig(output_path, dpi=150, facecolor="white", bbox_inches="tight")
     plt.close()
 

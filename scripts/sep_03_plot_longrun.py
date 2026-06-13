@@ -11,7 +11,12 @@ Outputs: data_out/sep_longrun_chart.png
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.chart_style import add_chart_footer
 
 
 def main():
@@ -111,17 +116,14 @@ def main():
     # Legend
     ax.legend(loc="upper right", framealpha=0.95, fontsize=10)
 
-    # Source note
-    ax.text(
-        0.01, 0.02,
-        f"Source: Federal Reserve Summary of Economic Projections | n={len(df)} meetings",
-        transform=ax.transAxes,
-        fontsize=9,
-        color="#666666",
-        style="italic"
+    # Source footnote and branding
+    add_chart_footer(
+        fig,
+        "Source: Federal Reserve Summary of Economic Projections; "
+        f"author's calculations. n={len(df)} meetings.",
     )
 
-    plt.tight_layout()
+    plt.tight_layout(rect=(0, 0.055, 1, 1))
 
     # Save
     output_path = Path("data_out/sep_longrun_chart.png")

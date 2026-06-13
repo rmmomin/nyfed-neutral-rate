@@ -9,7 +9,12 @@ SMP and Combined shown as markers.
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.chart_style import add_chart_footer
 
 
 def main():
@@ -163,18 +168,15 @@ def main():
     # Legend
     ax.legend(loc="upper right", framealpha=0.95, fontsize=10)
     
-    # Source note
+    # Source footnote and branding
     total_surveys = len(df_spd) + len(df_smp) + len(df_combined)
-    ax.text(
-        0.01, 0.02,
-        f"Source: NY Fed Survey of Primary Dealers & Market Participants | n={total_surveys} observations",
-        transform=ax.transAxes,
-        fontsize=9,
-        color="#666666",
-        style="italic"
+    add_chart_footer(
+        fig,
+        "Source: NY Fed Survey of Primary Dealers and Survey of Market Participants; "
+        f"author's calculations. n={total_surveys} observations.",
     )
     
-    plt.tight_layout()
+    plt.tight_layout(rect=(0, 0.055, 1, 1))
     
     # Save
     output_path = Path("data_out/longrun_rate_chart.png")
