@@ -7,10 +7,14 @@ Sends entire PDF files directly to OpenAI API for Figure 2 extraction.
 Usage:
     export OPENAI_API_KEY="your-key"
     python scripts/sep_02b_extract_pdf_llm.py
+
+By default, existing output rows are reused as a cache. Use --retry-failed to
+reprocess cached rows without p50 or --force to reprocess everything.
 """
 
 import base64
 import csv
+import argparse
 import json
 import os
 import re
@@ -31,9 +35,59 @@ RATE_LIMIT_DELAY = 3.0  # seconds between API calls (increased for rate limits)
 API_TIMEOUT = 120  # seconds
 MAX_RETRIES = 3  # Number of retries on rate limit errors
 
+FIELDNAMES = ["meeting_date", "horizon", "n", "p25", "p50", "p75", "source", "file_path", "page", "notes"]
+
+
+def load_dotenv(path: Path = Path(".env")) -> None:
+    """Load simple KEY=VALUE pairs from .env without overriding the shell."""
+    if not path.exists():
+        return
+
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+def cache_key_from_path(path: str) -> str:
+    """Use the source PDF filename as the stable cache key."""
+    return Path(path).name
+
+
+def load_cached_results(output_path: Path) -> Dict[str, Dict]:
+    """Load existing extraction rows keyed by source PDF filename."""
+    if not output_path.exists():
+        return {}
+
+    with open(output_path, newline="") as f:
+        rows = list(csv.DictReader(f))
+
+    cached = {}
+    for row in rows:
+        key = cache_key_from_path(row.get("file_path", ""))
+        if key:
+            row["meeting_date"] = parse_meeting_date({}, key).strftime("%Y-%m-%d")
+            cached[key] = row
+    return cached
+
+
+def has_valid_median(row: Dict) -> bool:
+    """Return True when a cached row has a non-empty p50 value."""
+    value = row.get("p50")
+    if value is None:
+        return False
+    return str(value).strip().lower() not in {"", "nan", "none"}
+
 
 def get_client() -> Optional[OpenAI]:
     """Get OpenAI client from environment variable."""
+    load_dotenv()
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         print("ERROR: OPENAI_API_KEY not set!")
@@ -142,6 +196,12 @@ def parse_meeting_date(result: Dict, filename: str) -> datetime:
         'aug': 8, 'sep': 9, 'sept': 9, 'oct': 10, 'nov': 11, 'dec': 12
     }
 
+    # Prefer the exact date embedded in SEP compilation filenames.
+    date_match = re.search(r'FOMC(\d{8})', filename, re.I)
+    if date_match:
+        date_str = date_match.group(1)
+        return datetime.strptime(date_str, "%Y%m%d")
+
     # Try LLM-extracted date
     meeting_str = result.get("meeting_date", "").lower()
     if meeting_str:
@@ -150,12 +210,6 @@ def parse_meeting_date(result: Dict, filename: str) -> datetime:
                 year_match = re.search(r'20\d{2}', result.get("meeting_date", ""))
                 if year_match:
                     return datetime(int(year_match.group()), month_num, 1)
-
-    # Fallback: parse from filename (e.g., FOMC20140319SEPcompilation.pdf)
-    date_match = re.search(r'FOMC(\d{8})', filename, re.I)
-    if date_match:
-        date_str = date_match.group(1)
-        return datetime.strptime(date_str, "%Y%m%d")
 
     # Last resort
     year_match = re.search(r'20\d{2}', filename)
@@ -233,6 +287,12 @@ def process_pdf(filepath: Path, client: OpenAI) -> Optional[Dict]:
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Extract SEP longer-run dot plot data from uncached PDFs.")
+    parser.add_argument("--force", action="store_true", help="Reprocess every PDF and overwrite cached rows")
+    parser.add_argument("--retry-failed", action="store_true", help="Reprocess cached rows that do not have p50")
+    parser.add_argument("--limit", type=int, default=None, help="Maximum number of API calls to make")
+    args = parser.parse_args()
+
     data_dir = Path("data_raw/sep")
     output_path = Path("data_out/sep_pdf_extracts.csv")
 
@@ -259,31 +319,47 @@ def main():
         print("No PDF files found. Run sep_01b_download_pdfs.py first.")
         return
 
-    results = []
+    cached_results = {} if args.force else load_cached_results(output_path)
+    results_by_file = dict(cached_results)
+    skipped_cached = 0
+    processed = 0
 
     for filepath in tqdm(pdf_files, desc="Processing PDFs"):
+        key = filepath.name
+        cached = cached_results.get(key)
+        if cached and not (args.retry_failed and not has_valid_median(cached)):
+            skipped_cached += 1
+            continue
+        if args.limit is not None and processed >= args.limit:
+            break
+
         result = process_pdf(filepath, client)
         if result:
-            results.append(result)
+            results_by_file[key] = result
+            processed += 1
             if result.get("p50"):
                 print(f"  {filepath.name}: median={result['p50']:.2f}%")
 
     # Write CSV
+    ordered_keys = [p.name for p in pdf_files if p.name in results_by_file]
+    archived_keys = [k for k in results_by_file if k not in ordered_keys]
+    results = [results_by_file[k] for k in ordered_keys + archived_keys]
+
     print(f"\nWriting {len(results)} records to {output_path}")
 
     with open(output_path, "w", newline="") as f:
-        fieldnames = ["meeting_date", "horizon", "n", "p25", "p50", "p75", "source", "file_path", "page", "notes"]
-        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer = csv.DictWriter(f, fieldnames=FIELDNAMES, lineterminator="\n")
         writer.writeheader()
         for r in results:
             writer.writerow(r)
 
     # Summary
-    valid_count = sum(1 for r in results if r.get("p50") is not None)
+    valid_count = sum(1 for r in results if has_valid_median(r))
     print("=" * 60)
     print("EXTRACTION COMPLETE")
     print(f"  Total PDFs: {len(pdf_files)}")
-    print(f"  Processed: {len(results)}")
+    print(f"  Cached/skipped: {skipped_cached}")
+    print(f"  API processed: {processed}")
     print(f"  Valid (has median): {valid_count}")
     print(f"  Output: {output_path}")
     print("=" * 60)

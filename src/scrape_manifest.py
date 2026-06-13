@@ -255,7 +255,7 @@ def group_links_by_meeting(raw_links: List[Dict]) -> List[SurveyMeeting]:
 
 def scrape_manifest(
     start_year: int = 2011,
-    end_year: int = 2025,
+    end_year: int = datetime.now().year,
     page_url: str = SURVEY_PAGE_URL,
 ) -> List[SurveyMeeting]:
     """
@@ -344,7 +344,7 @@ def build_download_manifest(
 
 if __name__ == "__main__":
     # Test the scraper
-    meetings = scrape_manifest(start_year=2020, end_year=2025)
+    meetings = scrape_manifest(start_year=2020)
     
     for meeting in meetings:
         print(f"\n{meeting.meeting_label} ({meeting.meeting_date}):")

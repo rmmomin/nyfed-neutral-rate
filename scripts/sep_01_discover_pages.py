@@ -92,6 +92,13 @@ def discover_sep_urls() -> Tuple[List[str], List[str]]:
     return sorted(html_pages), sorted(pdf_urls)
 
 
+def read_existing_urls(path: Path) -> List[str]:
+    """Read an existing URL cache if present."""
+    if not path.exists():
+        return []
+    return [line.strip() for line in path.read_text().splitlines() if line.strip()]
+
+
 def main():
     html_output = Path("data_out/sep_page_urls.txt")
     pdf_output = Path("data_out/sep_pdf_urls.txt")
@@ -99,6 +106,11 @@ def main():
 
     print("Discovering SEP projection materials...")
     html_pages, pdf_urls = discover_sep_urls()
+
+    # Preserve valid historical URLs that may no longer be linked from the
+    # current calendar or historical index pages.
+    html_pages = sorted(set(read_existing_urls(html_output)).union(html_pages))
+    pdf_urls = sorted(set(read_existing_urls(pdf_output)).union(pdf_urls))
 
     # Save HTML page URLs
     html_output.write_text("\n".join(html_pages) + "\n")

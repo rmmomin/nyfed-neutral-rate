@@ -192,6 +192,12 @@ def main():
 
     dots_panel, summary_panel = build_sep_dotplot_panel(urls)
 
+    if not summary_panel.empty and "horizon" in summary_panel.columns:
+        summary_panel = summary_panel[
+            summary_panel["horizon"].str.lower().str.contains("longer", na=False)
+        ].copy()
+        summary_panel["source"] = "html"
+
     # Save outputs
     dots_path = Path("data_out/sep_dots.csv")
     summary_path = Path("data_out/sep_summary.csv")
@@ -203,12 +209,10 @@ def main():
     print(f"Saved {len(summary_panel)} summary rows to {summary_path}")
 
     # Show stats for longer-run horizon
-    if not summary_panel.empty and "horizon" in summary_panel.columns:
-        lr = summary_panel[summary_panel["horizon"].str.lower().str.contains("longer")]
-        if not lr.empty:
-            print(f"\nLonger-run horizon: {len(lr)} meetings")
-            print(f"  Date range: {lr['meeting_date'].min()} to {lr['meeting_date'].max()}")
-            print(f"  Median range: {lr['p50'].min():.2f}% to {lr['p50'].max():.2f}%")
+    if not summary_panel.empty:
+        print(f"\nLonger-run horizon: {len(summary_panel)} meetings")
+        print(f"  Date range: {summary_panel['meeting_date'].min()} to {summary_panel['meeting_date'].max()}")
+        print(f"  Median range: {summary_panel['p50'].min():.2f}% to {summary_panel['p50'].max():.2f}%")
 
 
 if __name__ == "__main__":

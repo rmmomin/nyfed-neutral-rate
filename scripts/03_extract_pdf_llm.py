@@ -7,6 +7,9 @@ Sends entire PDF files directly to OpenAI API (not extracted text).
 Usage:
     export OPENAI_API_KEY="your-key"
     python scripts/03_extract_pdf_llm.py
+
+By default, existing output rows are reused as a cache. Use --retry-failed to
+reprocess cached rows without pctl50 or --force to reprocess everything.
 """
 
 import base64
@@ -41,10 +44,61 @@ MODEL = "gpt-5.2"
 SOURCE = "pdf_llm"
 RATE_LIMIT_DELAY = 0.5  # seconds between API calls
 API_TIMEOUT = 120  # seconds (increased for PDF processing)
+FIELDNAMES = [
+    "survey_date", "panel", "concept", "pctl25", "pctl50", "pctl75",
+    "source", "file_url", "local_path", "pdf_page", "notes"
+]
+
+
+def load_dotenv(path: Path = Path(".env")) -> None:
+    """Load simple KEY=VALUE pairs from .env without overriding the shell."""
+    if not path.exists():
+        return
+
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
+def cache_key_from_path(path: str) -> str:
+    """Use the source PDF filename as the stable cache key."""
+    return Path(path).name
+
+
+def load_cached_results(output: Path) -> dict:
+    """Load existing extraction rows keyed by source PDF filename."""
+    if not output.exists():
+        return {}
+
+    with open(output, newline="") as f:
+        rows = list(csv.DictReader(f))
+
+    cached = {}
+    for row in rows:
+        key = cache_key_from_path(row.get("local_path") or row.get("file_url", ""))
+        if key:
+            cached[key] = row
+    return cached
+
+
+def has_valid_median(row: dict) -> bool:
+    """Return True when a cached row has a non-empty pctl50 value."""
+    value = row.get("pctl50")
+    if value is None:
+        return False
+    return str(value).strip().lower() not in {"", "nan", "none"}
 
 
 def get_client() -> Optional[OpenAI]:
     """Get OpenAI client from environment."""
+    load_dotenv()
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
         logger.error("OPENAI_API_KEY not set!")
@@ -96,6 +150,44 @@ def get_xlsx_dates(xlsx_csv: Path) -> Set[str]:
                     # Extract YYYY-MM
                     dates.add(date_str[:7])
     return dates
+
+
+def parse_date_from_filename(filename: str) -> Optional[datetime]:
+    """Best-effort date parser used for pre-API XLSX duplicate checks."""
+    months = {
+        "jan": 1, "january": 1,
+        "feb": 2, "february": 2,
+        "mar": 3, "march": 3,
+        "apr": 4, "april": 4,
+        "may": 5,
+        "jun": 6, "june": 6,
+        "jul": 7, "july": 7,
+        "aug": 8, "august": 8,
+        "sep": 9, "sept": 9, "september": 9,
+        "oct": 10, "october": 10,
+        "nov": 11, "november": 11,
+        "dec": 12, "december": 12,
+    }
+    filename_lower = filename.lower()
+    year_match = re.search(r"20\d{2}", filename_lower)
+    if not year_match:
+        return None
+
+    month_matches = []
+    for month_name, month_num in months.items():
+        for match in re.finditer(rf"(?<![a-z]){re.escape(month_name)}(?![a-z])", filename_lower):
+            month_matches.append((match.start(), month_num))
+
+    if not month_matches:
+        return None
+
+    before_year = [item for item in month_matches if item[0] < year_match.start()]
+    if before_year:
+        month = sorted(before_year)[-1][1]
+    else:
+        month = sorted(month_matches)[0][1]
+
+    return datetime(int(year_match.group()), month, 1)
 
 
 def call_llm_with_pdf(client: OpenAI, filepath: Path) -> dict:
@@ -260,7 +352,9 @@ def process_pdf(filepath: Path, client: OpenAI, xlsx_dates: Set[str]) -> Optiona
 @click.option("--xlsx-csv", default="data_out/xlsx_extracts.csv", type=click.Path(path_type=Path))
 @click.option("--output", default="data_out/pdf_extracts.csv", type=click.Path(path_type=Path))
 @click.option("--limit", default=None, type=int, help="Limit number of PDFs to process")
-def main(data_dir: Path, xlsx_csv: Path, output: Path, limit: Optional[int]):
+@click.option("--force", is_flag=True, default=False, help="Reprocess every PDF and overwrite cached rows")
+@click.option("--retry-failed", is_flag=True, default=False, help="Reprocess cached rows that do not have pctl50")
+def main(data_dir: Path, xlsx_csv: Path, output: Path, limit: Optional[int], force: bool, retry_failed: bool):
     """Extract percentiles from PDFs using LLM with direct PDF upload."""
     
     logger.info("=" * 60)
@@ -288,37 +382,56 @@ def main(data_dir: Path, xlsx_csv: Path, output: Path, limit: Optional[int]):
         pdf_files = pdf_files[:limit]
         logger.info(f"Limited to {limit} files")
     
-    results = []
+    cached_results = {} if force else load_cached_results(output)
+    results_by_file = dict(cached_results)
     skipped = 0
+    skipped_cached = 0
+    processed = 0
     
     for filepath in tqdm(pdf_files, desc="Processing PDFs"):
+        key = filepath.name
+        cached = cached_results.get(key)
+        if cached and not (retry_failed and not has_valid_median(cached)):
+            skipped_cached += 1
+            continue
+
+        survey_date = parse_date_from_filename(filepath.name)
+        if survey_date and survey_date.strftime("%Y-%m") in xlsx_dates:
+            skipped += 1
+            continue
+
+        if limit is not None and processed >= limit:
+            break
+
         result = process_pdf(filepath, client, xlsx_dates)
         if result is None:
             skipped += 1
         else:
-            results.append(result)
+            results_by_file[key] = result.to_dict()
+            processed += 1
             if result.pctl50:
                 logger.debug(f"{filepath.name}: {result.survey_date.strftime('%Y-%m')} median={result.pctl50}")
     
     # Write CSV
+    ordered_keys = [p.name for p in pdf_files if p.name in results_by_file]
+    archived_keys = [k for k in results_by_file if k not in ordered_keys]
+    results = [results_by_file[k] for k in ordered_keys + archived_keys]
     logger.info(f"Writing {len(results)} records to {output}")
     
     with open(output, "w", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=[
-            "survey_date", "panel", "concept", "pctl25", "pctl50", "pctl75",
-            "source", "file_url", "local_path", "pdf_page", "notes"
-        ])
+        writer = csv.DictWriter(f, fieldnames=FIELDNAMES, lineterminator="\n")
         writer.writeheader()
         for r in results:
-            writer.writerow(r.to_dict())
+            writer.writerow(r)
     
     # Summary
-    valid_count = sum(1 for r in results if r.pctl50 is not None)
+    valid_count = sum(1 for r in results if has_valid_median(r))
     logger.info("=" * 60)
     logger.info("PDF EXTRACTION COMPLETE")
     logger.info(f"  Total PDFs: {len(pdf_files)}")
     logger.info(f"  Skipped (XLSX exists): {skipped}")
-    logger.info(f"  Processed: {len(results)}")
+    logger.info(f"  Cached/skipped: {skipped_cached}")
+    logger.info(f"  API processed: {processed}")
     logger.info(f"  Valid (has median): {valid_count}")
     logger.info(f"  Output: {output.absolute()}")
     logger.info("=" * 60)

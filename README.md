@@ -41,6 +41,7 @@ pip install -r requirements.txt
 
 # Set OpenAI API key for PDF extraction
 export OPENAI_API_KEY="your-key-here"
+# Or add OPENAI_API_KEY=... to a local .env file
 ```
 
 ## Usage
@@ -48,8 +49,8 @@ export OPENAI_API_KEY="your-key-here"
 ### Run Full Pipeline
 
 ```bash
-# Step 1: Download all files (XLSX + PDF)
-python scripts/01_scrape_and_download.py --start-year 2011 --end-year 2025
+# Step 1: Download all files (XLSX + PDF) through the current year
+python scripts/01_scrape_and_download.py --start-year 2011
 
 # Step 2: Extract from XLSX files
 python scripts/02_extract_xlsx.py
@@ -63,6 +64,10 @@ python scripts/04_combine_and_plot.py
 # Or run all steps at once:
 python scripts/run_all.py
 ```
+
+PDF extraction scripts reuse existing CSV outputs as a cache. By default they
+only call OpenAI for uncached PDFs; use `--retry-failed` to reprocess cached
+rows without medians or `--force` to reprocess everything.
 
 ### Output Files
 

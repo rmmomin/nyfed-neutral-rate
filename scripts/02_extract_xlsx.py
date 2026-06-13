@@ -71,7 +71,7 @@ def main(data_dir: Path, output: Path):
         writer = csv.DictWriter(f, fieldnames=[
             "survey_date", "panel", "concept", "pctl25", "pctl50", "pctl75",
             "source", "file_url", "local_path", "pdf_page", "notes"
-        ])
+        ], lineterminator="\n")
         writer.writeheader()
         for r in all_results:
             writer.writerow(r.to_dict())
@@ -88,4 +88,3 @@ def main(data_dir: Path, output: Path):
 
 if __name__ == "__main__":
     main()
-

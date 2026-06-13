@@ -39,6 +39,9 @@ def main():
         df_pdf = pd.read_csv(pdf_path, parse_dates=["meeting_date"])
         # Filter to only valid extracts with data
         df_pdf = df_pdf[df_pdf["p50"].notna()].copy()
+        if not df_html.empty:
+            first_html_date = df_html["meeting_date"].min()
+            df_pdf = df_pdf[df_pdf["meeting_date"] < first_html_date].copy()
         print(f"  PDF extracts: {len(df_pdf)} rows")
     else:
         print(f"  Warning: {pdf_path} not found")

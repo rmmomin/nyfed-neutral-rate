@@ -36,12 +36,9 @@ def main():
     print("NY FED SURVEY DATA PIPELINE")
     print("="*60)
     
-    # Step 1: Download (skip if data already exists)
-    data_dir = scripts_dir.parent / "data_raw"
-    if not list(data_dir.glob("*.xlsx")) and not list(data_dir.glob("*.pdf")):
-        run_step(str(scripts_dir / "01_scrape_and_download.py"))
-    else:
-        print(f"\nSkipping download - {len(list(data_dir.glob('*')))} files already in data_raw/")
+    # Step 1: Refresh manifest/download cache. Existing files are skipped by
+    # the downloader unless --redownload is passed to that script directly.
+    run_step(str(scripts_dir / "01_scrape_and_download.py"))
     
     # Step 2: Extract from XLSX
     run_step(str(scripts_dir / "02_extract_xlsx.py"))
@@ -61,4 +58,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

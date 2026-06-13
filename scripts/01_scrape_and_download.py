@@ -3,10 +3,11 @@
 Step 1: Scrape manifest and download all files (XLSX and PDF).
 
 Usage:
-    python scripts/01_scrape_and_download.py --start-year 2011 --end-year 2025
+    python scripts/01_scrape_and_download.py --start-year 2011
 """
 
 import sys
+from datetime import datetime
 from pathlib import Path
 
 # Add src to path
@@ -20,7 +21,7 @@ from src.download import download_all_meetings
 
 @click.command()
 @click.option("--start-year", default=2011, type=int, help="Start year")
-@click.option("--end-year", default=2025, type=int, help="End year")
+@click.option("--end-year", default=datetime.now().year, type=int, help="End year")
 @click.option("--data-dir", default="data_raw", type=click.Path(path_type=Path))
 @click.option("--redownload", is_flag=True, default=False, help="Force re-download")
 def main(start_year: int, end_year: int, data_dir: Path, redownload: bool):
@@ -61,4 +62,3 @@ def main(start_year: int, end_year: int, data_dir: Path, redownload: bool):
 
 if __name__ == "__main__":
     main()
-
