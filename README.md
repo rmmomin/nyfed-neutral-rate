@@ -78,6 +78,12 @@ python scripts/fred_fed_funds_central_tendency.py
 # Pull the FRED target range, compute its midpoint, and compare it to neutral-rate expectations:
 python scripts/fred_target_midpoint_vs_neutral.py
 
+# Pull FRED Treasury constant maturity yields and plot the latest yield curve:
+python scripts/fred_yield_curve.py
+
+# Compare the latest complete yield curve to a historical curve:
+python scripts/fred_yield_curve.py --comparison-date 2026-02-27 --curve-csv data_out/fred_yield_curve_latest_vs_2026-02-27.csv --output-png data_out/fred_yield_curve_latest_vs_2026-02-27.png
+
 # Analyze NY Fed anchoring to the latest prior SEP and prevailing target midpoint:
 python scripts/analyze_nyfed_sep_anchoring.py
 
@@ -111,6 +117,12 @@ rows without medians or `--force` to reprocess everything.
 | `data_out/fed_target_midpoint_vs_neutral.csv` | FRED target range midpoint aligned with SEP and NY Fed neutral-rate medians |
 | `data_out/fed_target_midpoint_vs_neutral_metadata.csv` | FRED metadata for target range and SEP median series |
 | `data_out/fed_target_midpoint_vs_neutral.png` | Fed target midpoint vs neutral-rate expectations chart |
+| `data_out/fred_yield_curve_history.csv` | Historical FRED Treasury constant maturity yield panel |
+| `data_out/fred_yield_curve_latest.csv` | Latest complete Treasury yield curve used in the plot |
+| `data_out/fred_yield_curve_latest_vs_2026-02-27.csv` | Latest complete Treasury yield curve compared with February 27, 2026 |
+| `data_out/fred_yield_curve_metadata.csv` | FRED metadata for Treasury yield curve series |
+| `data_out/fred_yield_curve.png` | Latest Treasury yield curve chart |
+| `data_out/fred_yield_curve_latest_vs_2026-02-27.png` | Latest Treasury yield curve compared with February 27, 2026 |
 | `data_out/nyfed_sep_anchor_analysis.csv` | Survey medians aligned to the latest prior SEP and target midpoint by received-by date |
 | `data_out/nyfed_sep_anchor_summary.csv` | Anchoring gap summary by survey panel |
 | `data_out/nyfed_sep_anchor_regressions.csv` | OLS models for SEP anchoring and target midpoint influence |
@@ -164,6 +176,7 @@ neutral-rate-survey/
 │   ├── analyze_sep_future_nyfed_predictive.py # Analyze SEP changes vs future survey changes
 │   ├── fred_target_midpoint_vs_neutral.py # Compare FRED target midpoint to neutral estimates
 │   ├── fred_fed_funds_central_tendency.py # Pull FRED SEP central tendency series
+│   ├── fred_yield_curve.py      # Pull FRED Treasury yields and plot latest curve
 │   ├── plot_sep_survey_event_panel.py # Plot latest-before and first-after event windows
 │   ├── plot_realtime_sep_vs_market.py # Compare SEP vintages to market expectations
 │   └── run_all.py                 # Run full pipeline
@@ -240,6 +253,12 @@ python scripts/sep_run_all.py
 | `data_out/fed_target_midpoint_vs_neutral.csv` | Daily FRED target range midpoint plus SEP and NY Fed neutral-rate medians |
 | `data_out/fed_target_midpoint_vs_neutral_metadata.csv` | FRED metadata for DFEDTARL, DFEDTARU, and FEDTARMDLR |
 | `data_out/fed_target_midpoint_vs_neutral.png` | Fed target midpoint vs longer-run neutral-rate expectations chart |
+| `data_out/fred_yield_curve_history.csv` | Historical FRED Treasury constant maturity yield panel |
+| `data_out/fred_yield_curve_latest.csv` | Latest complete Treasury yield curve used in the plot |
+| `data_out/fred_yield_curve_latest_vs_2026-02-27.csv` | Latest complete Treasury yield curve compared with February 27, 2026 |
+| `data_out/fred_yield_curve_metadata.csv` | FRED metadata for Treasury yield curve series |
+| `data_out/fred_yield_curve.png` | Latest Treasury yield curve chart |
+| `data_out/fred_yield_curve_latest_vs_2026-02-27.png` | Latest Treasury yield curve compared with February 27, 2026 |
 | `data_out/nyfed_sep_anchor_analysis.csv` | NY Fed survey medians aligned to latest prior SEP and prevailing target midpoint |
 | `data_out/nyfed_sep_anchor_summary.csv` | Anchoring summary statistics by panel |
 | `data_out/nyfed_sep_anchor_regressions.csv` | OLS estimates for SEP anchoring and target midpoint influence |
@@ -291,6 +310,24 @@ python scripts/fred_target_midpoint_vs_neutral.py
 This pulls FRED series `DFEDTARL` and `DFEDTARU`, computes the target-range
 midpoint as `(lower + upper) / 2`, and plots it against `FEDTARMDLR` and the NY
 Fed survey medians from `data_out/nyfed_ff_longrun_percentiles.csv`.
+
+### FRED Treasury Yield Curve
+
+![U.S. Treasury Yield Curve](data_out/fred_yield_curve.png)
+
+```bash
+python scripts/fred_yield_curve.py
+```
+
+This pulls FRED Treasury constant maturity series `DGS1MO`, `DGS3MO`,
+`DGS6MO`, `DGS1`, `DGS2`, `DGS3`, `DGS5`, `DGS7`, `DGS10`, `DGS20`, and
+`DGS30`, then plots the latest date with a complete set of observations.
+
+![U.S. Treasury Yield Curve Comparison](data_out/fred_yield_curve_latest_vs_2026-02-27.png)
+
+```bash
+python scripts/fred_yield_curve.py --comparison-date 2026-02-27 --curve-csv data_out/fred_yield_curve_latest_vs_2026-02-27.csv --output-png data_out/fred_yield_curve_latest_vs_2026-02-27.png
+```
 
 ### NY Fed Survey Anchoring to SEP
 
