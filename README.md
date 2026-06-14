@@ -86,6 +86,9 @@ python scripts/analyze_nyfed_future_sep_predictive.py
 
 # Analyze whether SEP median changes predict future NY Fed survey median changes:
 python scripts/analyze_sep_future_nyfed_predictive.py
+
+# Plot the event-window panel with latest-before and first-after surveys:
+python scripts/plot_sep_survey_event_panel.py
 ```
 
 PDF extraction scripts reuse existing CSV outputs as a cache. By default they
@@ -122,6 +125,8 @@ rows without medians or `--force` to reprocess everything.
 | `data_out/sep_future_nyfed_predictive_summary.csv` | Reverse predictive summary statistics by panel and sample type |
 | `data_out/sep_future_nyfed_predictive_regressions.csv` | OLS models for survey changes on prior SEP changes |
 | `data_out/sep_future_nyfed_predictive.png` | Reverse predictive diagnostic chart |
+| `data_out/sep_future_nyfed_predictive_first_after.png` | First-survey-after-SEP focused diagnostic chart |
+| `data_out/sep_survey_event_panel.png` | Two-panel event-window chart for latest-before and first-after surveys |
 | `data_out/us_rstar_comparison.xlsx` | Comparison with Hartley (2024) data |
 
 ## Output Format
@@ -159,6 +164,7 @@ neutral-rate-survey/
 │   ├── analyze_sep_future_nyfed_predictive.py # Analyze SEP changes vs future survey changes
 │   ├── fred_target_midpoint_vs_neutral.py # Compare FRED target midpoint to neutral estimates
 │   ├── fred_fed_funds_central_tendency.py # Pull FRED SEP central tendency series
+│   ├── plot_sep_survey_event_panel.py # Plot latest-before and first-after event windows
 │   ├── plot_realtime_sep_vs_market.py # Compare SEP vintages to market expectations
 │   └── run_all.py                 # Run full pipeline
 ├── src/                           # Shared utilities
@@ -248,6 +254,8 @@ python scripts/sep_run_all.py
 | `data_out/sep_future_nyfed_predictive_summary.csv` | Reverse predictive statistics by panel and sample type |
 | `data_out/sep_future_nyfed_predictive_regressions.csv` | OLS estimates for survey changes on prior SEP changes |
 | `data_out/sep_future_nyfed_predictive.png` | Future NY Fed survey predictive diagnostic chart |
+| `data_out/sep_future_nyfed_predictive_first_after.png` | Focused chart using only the first survey after each SEP release |
+| `data_out/sep_survey_event_panel.png` | Two-panel event-window chart for latest-before and first-after surveys |
 
 **Note:** Historical PDF extraction (2012-2019) is in progress. The chart currently shows 2020+ data from HTML sources.
 
@@ -316,6 +324,8 @@ the latest survey received before each SEP release for each panel.
 
 ![SEP Future NY Fed Predictive Analysis](data_out/sep_future_nyfed_predictive.png)
 
+![First Survey After Each SEP Release](data_out/sep_future_nyfed_predictive_first_after.png)
+
 ```bash
 python scripts/analyze_sep_future_nyfed_predictive.py
 ```
@@ -324,6 +334,17 @@ This tests whether SEP longer-run median changes predict later NY Fed survey
 median changes. The survey-level output matches each survey to the latest SEP
 change released strictly before the survey `received_by_date`; the event-level
 output keeps the first survey received after each SEP release for each panel.
+
+### SEP and NY Fed Event-Window Panel
+
+![NY Fed Survey and SEP Event Windows](data_out/sep_survey_event_panel.png)
+
+```bash
+python scripts/plot_sep_survey_event_panel.py
+```
+
+This chart keeps only the event-level windows: the latest survey received before
+each SEP release, and the first survey received after each SEP release.
 
 ## Real-Time SEP vs Market Expectations
 

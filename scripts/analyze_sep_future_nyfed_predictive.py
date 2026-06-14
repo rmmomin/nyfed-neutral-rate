@@ -16,6 +16,7 @@ Outputs:
   - data_out/sep_future_nyfed_predictive_summary.csv
   - data_out/sep_future_nyfed_predictive_regressions.csv
   - data_out/sep_future_nyfed_predictive.png
+  - data_out/sep_future_nyfed_predictive_first_after.png
 """
 
 import argparse
@@ -376,6 +377,77 @@ def plot_predictive_analysis(
     plt.close()
 
 
+def plot_first_after_analysis(event_panel: pd.DataFrame, output_path: Path) -> None:
+    fig, ax = plt.subplots(figsize=(9.5, 7), facecolor="white")
+    ax.set_facecolor("white")
+    ax.grid(True, alpha=0.3, linestyle="-", linewidth=0.5)
+    ax.set_axisbelow(True)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.axhline(0, color="#333333", linewidth=1.0)
+    ax.axvline(0, color="#333333", linewidth=1.0)
+
+    for panel_name in PANEL_ORDER:
+        group = event_panel[event_panel["panel"] == panel_name]
+        if group.empty:
+            continue
+        ax.scatter(
+            group["sep_change_bps"],
+            group["survey_change_bps"],
+            s=54,
+            color=PANEL_COLORS[panel_name],
+            marker=PANEL_MARKERS[panel_name],
+            edgecolors="white",
+            linewidths=0.6,
+            alpha=0.88,
+            label=PANEL_LABELS[panel_name],
+        )
+
+    coefficients, r_squared, _ = ols(
+        event_panel["survey_change_bps"],
+        event_panel[["sep_change_bps"]],
+    )
+    slope = coefficients.get("sep_change_bps", np.nan)
+    intercept = coefficients.get("intercept", np.nan)
+    if pd.notna(slope) and pd.notna(intercept):
+        x_values = np.linspace(
+            event_panel["sep_change_bps"].min(),
+            event_panel["sep_change_bps"].max(),
+            100,
+        )
+        ax.plot(
+            x_values,
+            intercept + slope * x_values,
+            color="#333333",
+            linestyle="--",
+            linewidth=2.0,
+            label=f"Fit: {slope:.2f}x, R2={r_squared:.2f}",
+        )
+
+    ax.set_title(
+        "First NY Fed Survey After Each SEP Release",
+        fontsize=15,
+        fontweight="bold",
+    )
+    ax.set_xlabel("SEP Median Change (bps)", fontweight="bold")
+    ax.set_ylabel("Next NY Fed Survey Median Change (bps)", fontweight="bold")
+    ax.legend(loc="upper left", framealpha=0.95, fontsize=9.5)
+    fig.suptitle(
+        "Do SEP Median Changes Predict the First Subsequent NY Fed Survey?",
+        fontsize=17,
+        fontweight="bold",
+        y=0.97,
+    )
+    add_chart_footer(
+        fig,
+        "Sources: FRED; FOMC SEP; NY Fed SPD/SMP; author's calculations. "
+        "First survey received after each SEP release.",
+    )
+    plt.tight_layout(rect=(0, 0.07, 1, 0.93))
+    plt.savefig(output_path, dpi=150, facecolor="white", bbox_inches="tight")
+    plt.close()
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Analyze whether SEP median changes predict later NY Fed survey median changes."
@@ -422,6 +494,12 @@ def main():
         type=Path,
         help="Diagnostic chart output PNG.",
     )
+    parser.add_argument(
+        "--first-after-output-png",
+        default="data_out/sep_future_nyfed_predictive_first_after.png",
+        type=Path,
+        help="First-survey-after-SEP chart output PNG.",
+    )
     args = parser.parse_args()
 
     market_raw, sep = read_inputs(args.nyfed_csv, args.sep_csv)
@@ -443,6 +521,7 @@ def main():
     summary.to_csv(args.summary_csv, index=False)
     regressions.to_csv(args.regression_csv, index=False)
     plot_predictive_analysis(survey_panel, event_panel, args.output_png)
+    plot_first_after_analysis(event_panel, args.first_after_output_png)
 
     survey_all = summary[
         (summary["sample_type"] == "survey_level") & (summary["sample"] == "All")
@@ -455,6 +534,7 @@ def main():
     print(f"Saved summary to {args.summary_csv}")
     print(f"Saved regressions to {args.regression_csv}")
     print(f"Chart saved to {args.output_png}")
+    print(f"First-after chart saved to {args.first_after_output_png}")
     print(
         "Predictive summary: "
         f"survey-level R2={survey_all['r_squared']:.3f}, "
