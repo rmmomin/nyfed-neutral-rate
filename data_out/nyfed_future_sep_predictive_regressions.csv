@@ -1,0 +1,11 @@
+sample_type,sample,model,n,r_squared,intercept,survey_change_bps,panel_fe_combined,panel_fe_smp
+survey_level,All,future_sep_change_bps_on_survey_change_bps,225,0.037,-1.2245,0.2185,,
+survey_level,SPD,future_sep_change_bps_on_survey_change_bps,108,0.03,-2.0264,0.2431,,
+survey_level,SMP,future_sep_change_bps_on_survey_change_bps,96,0.028,-1.7269,0.1616,,
+survey_level,Combined,future_sep_change_bps_on_survey_change_bps,21,0.07,5.0038,0.2368,,
+survey_level,All,future_sep_change_bps_on_survey_change_bps_panel_fe,225,0.073,-2.0671,0.1926,7.2037,0.3686
+event_level_latest_survey,All,future_sep_change_bps_on_survey_change_bps,113,0.023,-1.2307,0.1935,,
+event_level_latest_survey,SPD,future_sep_change_bps_on_survey_change_bps,54,0.051,-1.777,0.4075,,
+event_level_latest_survey,SMP,future_sep_change_bps_on_survey_change_bps,48,0.011,-1.8306,0.1092,,
+event_level_latest_survey,Combined,future_sep_change_bps_on_survey_change_bps,11,0.03,5.8039,-0.1747,,
+event_level_latest_survey,All,future_sep_change_bps_on_survey_change_bps_panel_fe,113,0.061,-2.0385,0.1681,7.1568,0.2318

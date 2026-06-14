@@ -1,0 +1,15 @@
+sample,model,n,r_squared,intercept,sep_longrun_median,target_midpoint,target_minus_sep_bps,panel_fe_combined,panel_fe_smp
+All,market_median_on_sep,231,0.83,0.1548,0.9167,,,,
+All,market_median_on_sep_and_target,231,0.939,-0.4865,1.0675,0.0924,,,
+All,market_minus_sep_bps_on_target_minus_sep_bps,231,0.559,-3.0645,,,0.0711,,
+SPD,market_median_on_sep,110,0.889,0.2118,0.9061,,,,
+SPD,market_median_on_sep_and_target,110,0.953,-0.3069,1.0292,0.0836,,,
+SPD,market_minus_sep_bps_on_target_minus_sep_bps,110,0.549,1.1623,,,0.0646,,
+SMP,market_median_on_sep,98,0.814,-0.0205,0.9482,,,,
+SMP,market_median_on_sep_and_target,98,0.942,-0.6122,1.0873,0.0973,,,
+SMP,market_minus_sep_bps_on_target_minus_sep_bps,98,0.575,-9.6081,,,0.0758,,
+Combined,market_median_on_sep,23,0.804,0.6423,0.8281,,,,
+Combined,market_median_on_sep_and_target,23,0.816,-0.154,0.9979,0.0678,,,
+Combined,market_minus_sep_bps_on_target_minus_sep_bps,23,0.196,6.0991,,,0.0517,,
+All,market_median_on_sep_target_panel_fe,231,0.948,-0.3917,1.0532,0.0904,,-0.0241,-0.108
+All,market_minus_sep_bps_on_target_minus_sep_bps_panel_fe,231,0.637,1.7909,,,0.0693,0.9893,-12.0383

@@ -77,6 +77,15 @@ python scripts/fred_fed_funds_central_tendency.py
 
 # Pull the FRED target range, compute its midpoint, and compare it to neutral-rate expectations:
 python scripts/fred_target_midpoint_vs_neutral.py
+
+# Analyze NY Fed anchoring to the latest prior SEP and prevailing target midpoint:
+python scripts/analyze_nyfed_sep_anchoring.py
+
+# Analyze whether NY Fed median changes predict future SEP median changes:
+python scripts/analyze_nyfed_future_sep_predictive.py
+
+# Analyze whether SEP median changes predict future NY Fed survey median changes:
+python scripts/analyze_sep_future_nyfed_predictive.py
 ```
 
 PDF extraction scripts reuse existing CSV outputs as a cache. By default they
@@ -99,6 +108,20 @@ rows without medians or `--force` to reprocess everything.
 | `data_out/fed_target_midpoint_vs_neutral.csv` | FRED target range midpoint aligned with SEP and NY Fed neutral-rate medians |
 | `data_out/fed_target_midpoint_vs_neutral_metadata.csv` | FRED metadata for target range and SEP median series |
 | `data_out/fed_target_midpoint_vs_neutral.png` | Fed target midpoint vs neutral-rate expectations chart |
+| `data_out/nyfed_sep_anchor_analysis.csv` | Survey medians aligned to the latest prior SEP and target midpoint by received-by date |
+| `data_out/nyfed_sep_anchor_summary.csv` | Anchoring gap summary by survey panel |
+| `data_out/nyfed_sep_anchor_regressions.csv` | OLS models for SEP anchoring and target midpoint influence |
+| `data_out/nyfed_sep_anchor_analysis.png` | Anchoring diagnostic chart |
+| `data_out/nyfed_future_sep_predictive_analysis.csv` | Survey-level panel of survey median changes aligned to future SEP changes |
+| `data_out/nyfed_future_sep_predictive_event_analysis.csv` | Latest-survey-before-SEP event-level predictive panel |
+| `data_out/nyfed_future_sep_predictive_summary.csv` | Predictive summary statistics by panel and sample type |
+| `data_out/nyfed_future_sep_predictive_regressions.csv` | OLS models for future SEP changes on survey median changes |
+| `data_out/nyfed_future_sep_predictive.png` | Predictive diagnostic chart |
+| `data_out/sep_future_nyfed_predictive_analysis.csv` | Survey-level panel of SEP median changes aligned to later survey changes |
+| `data_out/sep_future_nyfed_predictive_event_analysis.csv` | First-survey-after-SEP event-level predictive panel |
+| `data_out/sep_future_nyfed_predictive_summary.csv` | Reverse predictive summary statistics by panel and sample type |
+| `data_out/sep_future_nyfed_predictive_regressions.csv` | OLS models for survey changes on prior SEP changes |
+| `data_out/sep_future_nyfed_predictive.png` | Reverse predictive diagnostic chart |
 | `data_out/us_rstar_comparison.xlsx` | Comparison with Hartley (2024) data |
 
 ## Output Format
@@ -131,6 +154,9 @@ neutral-rate-survey/
 │   ├── 02_extract_xlsx.py         # Extract data from XLSX files
 │   ├── 03_extract_pdf_llm.py      # Extract data from PDFs using GPT-5.2
 │   ├── 04_combine_and_plot.py     # Combine extracts into final CSV
+│   ├── analyze_nyfed_future_sep_predictive.py # Analyze survey changes vs future SEP changes
+│   ├── analyze_nyfed_sep_anchoring.py # Analyze survey anchoring to SEP and target midpoint
+│   ├── analyze_sep_future_nyfed_predictive.py # Analyze SEP changes vs future survey changes
 │   ├── fred_target_midpoint_vs_neutral.py # Compare FRED target midpoint to neutral estimates
 │   ├── fred_fed_funds_central_tendency.py # Pull FRED SEP central tendency series
 │   ├── plot_realtime_sep_vs_market.py # Compare SEP vintages to market expectations
@@ -208,6 +234,20 @@ python scripts/sep_run_all.py
 | `data_out/fed_target_midpoint_vs_neutral.csv` | Daily FRED target range midpoint plus SEP and NY Fed neutral-rate medians |
 | `data_out/fed_target_midpoint_vs_neutral_metadata.csv` | FRED metadata for DFEDTARL, DFEDTARU, and FEDTARMDLR |
 | `data_out/fed_target_midpoint_vs_neutral.png` | Fed target midpoint vs longer-run neutral-rate expectations chart |
+| `data_out/nyfed_sep_anchor_analysis.csv` | NY Fed survey medians aligned to latest prior SEP and prevailing target midpoint |
+| `data_out/nyfed_sep_anchor_summary.csv` | Anchoring summary statistics by panel |
+| `data_out/nyfed_sep_anchor_regressions.csv` | OLS estimates for SEP anchoring and target midpoint influence |
+| `data_out/nyfed_sep_anchor_analysis.png` | Diagnostic anchoring chart |
+| `data_out/nyfed_future_sep_predictive_analysis.csv` | Survey-level changes matched to the next SEP change |
+| `data_out/nyfed_future_sep_predictive_event_analysis.csv` | Latest-survey-before-SEP changes matched to each SEP event |
+| `data_out/nyfed_future_sep_predictive_summary.csv` | Predictive statistics by panel and sample type |
+| `data_out/nyfed_future_sep_predictive_regressions.csv` | OLS estimates for future SEP changes on survey changes |
+| `data_out/nyfed_future_sep_predictive.png` | Future SEP predictive diagnostic chart |
+| `data_out/sep_future_nyfed_predictive_analysis.csv` | Survey-level changes matched to the latest prior SEP change |
+| `data_out/sep_future_nyfed_predictive_event_analysis.csv` | First survey after each SEP release matched to that SEP change |
+| `data_out/sep_future_nyfed_predictive_summary.csv` | Reverse predictive statistics by panel and sample type |
+| `data_out/sep_future_nyfed_predictive_regressions.csv` | OLS estimates for survey changes on prior SEP changes |
+| `data_out/sep_future_nyfed_predictive.png` | Future NY Fed survey predictive diagnostic chart |
 
 **Note:** Historical PDF extraction (2012-2019) is in progress. The chart currently shows 2020+ data from HTML sources.
 
@@ -243,6 +283,47 @@ python scripts/fred_target_midpoint_vs_neutral.py
 This pulls FRED series `DFEDTARL` and `DFEDTARU`, computes the target-range
 midpoint as `(lower + upper) / 2`, and plots it against `FEDTARMDLR` and the NY
 Fed survey medians from `data_out/nyfed_ff_longrun_percentiles.csv`.
+
+### NY Fed Survey Anchoring to SEP
+
+![NY Fed SEP Anchoring Analysis](data_out/nyfed_sep_anchor_analysis.png)
+
+```bash
+python scripts/analyze_nyfed_sep_anchoring.py
+```
+
+This aligns each NY Fed survey median to the latest SEP longer-run median
+released strictly before the survey `received_by_date`, then joins the prevailing
+fed funds target midpoint on that same received-by date. The outputs report
+survey-minus-SEP gaps and simple OLS models for the effect of the target midpoint
+on survey medians.
+
+### NY Fed Survey Changes vs Future SEP Changes
+
+![NY Fed Future SEP Predictive Analysis](data_out/nyfed_future_sep_predictive.png)
+
+```bash
+python scripts/analyze_nyfed_future_sep_predictive.py
+```
+
+This tests whether changes in NY Fed survey medians predict the next SEP
+longer-run median change. For each survey observation, the future SEP is the
+first SEP released on or after the survey `received_by_date`; the SEP change is
+measured relative to the latest prior SEP. The event-level output also keeps only
+the latest survey received before each SEP release for each panel.
+
+### SEP Changes vs Future NY Fed Survey Changes
+
+![SEP Future NY Fed Predictive Analysis](data_out/sep_future_nyfed_predictive.png)
+
+```bash
+python scripts/analyze_sep_future_nyfed_predictive.py
+```
+
+This tests whether SEP longer-run median changes predict later NY Fed survey
+median changes. The survey-level output matches each survey to the latest SEP
+change released strictly before the survey `received_by_date`; the event-level
+output keeps the first survey received after each SEP release for each panel.
 
 ## Real-Time SEP vs Market Expectations
 

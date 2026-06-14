@@ -1,0 +1,9 @@
+sample_type,sample,n,first_received_by_date,last_received_by_date,corr_survey_change_sep_change,r_squared,intercept_bps,slope_sep_bps_per_survey_bp,mean_abs_survey_change_bps,mean_abs_sep_change_bps,median_abs_survey_change_bps,median_abs_sep_change_bps,both_nonzero_n,directional_accuracy_both_nonzero,survey_nonzero_n,directional_accuracy_when_survey_moves,sep_nonzero_n,directional_accuracy_when_sep_moves,avg_days_to_future_sep
+survey_level,All,225,2012-07-23,2026-03-09,0.191,0.037,-1.22,0.219,4.6,6.0,0.0,0.0,38,0.684,80,0.325,84,0.31,33.4
+survey_level,SPD,108,2012-07-23,2026-03-09,0.172,0.03,-2.03,0.243,3.6,5.9,0.0,0.0,14,0.786,31,0.355,38,0.289,33.7
+survey_level,SMP,96,2014-03-10,2026-03-09,0.168,0.028,-1.73,0.162,5.7,6.0,0.0,0.0,18,0.611,40,0.275,36,0.306,33.8
+survey_level,Combined,21,2023-09-11,2026-03-09,0.264,0.07,5.0,0.237,4.4,5.7,0.0,0.0,6,0.667,9,0.444,10,0.4,30.6
+event_level_latest_survey,All,113,2012-09-04,2026-03-09,0.15,0.023,-1.23,0.193,3.8,5.9,0.0,0.0,17,0.647,36,0.306,42,0.262,9.0
+event_level_latest_survey,SPD,54,2012-09-04,2026-03-09,0.227,0.051,-1.78,0.407,2.4,5.9,0.0,0.0,5,0.8,11,0.364,19,0.211,9.0
+event_level_latest_survey,SMP,48,2014-03-10,2026-03-09,0.107,0.011,-1.83,0.109,5.2,6.0,0.0,0.0,9,0.556,20,0.25,18,0.278,9.0
+event_level_latest_survey,Combined,11,2023-09-11,2026-03-09,-0.172,0.03,5.8,-0.175,4.2,5.5,0.0,0.0,3,0.667,5,0.4,5,0.4,9.0
