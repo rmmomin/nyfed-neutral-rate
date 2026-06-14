@@ -155,7 +155,7 @@ def plot_central_tendency(df: pd.DataFrame, output_path: Path) -> None:
         df["central_tendency_high"],
         color=color_band,
         alpha=0.45,
-        label="Central Tendency Bounds (FEDTARCTLLR-FEDTARCTHLR)",
+        label="Central Tendency Bounds",
     )
     ax.plot(
         df["date"],
@@ -164,7 +164,7 @@ def plot_central_tendency(df: pd.DataFrame, output_path: Path) -> None:
         linewidth=2.7,
         marker="o",
         markersize=4,
-        label="Median (FEDTARMDLR)",
+        label="Longer-Run Median",
     )
     ax.plot(
         df["date"],
@@ -173,7 +173,7 @@ def plot_central_tendency(df: pd.DataFrame, output_path: Path) -> None:
         linewidth=2.0,
         marker="D",
         markersize=3.5,
-        label="Central Tendency Midpoint (FEDTARCTMLR)",
+        label="Central Tendency Midpoint",
     )
 
     ax.set_xlabel("SEP Release Date", fontsize=12, fontweight="bold")

@@ -74,6 +74,9 @@ python scripts/plot_realtime_sep_vs_market.py
 
 # Pull FRED SEP longer-run fed funds median/central tendency series and build the chart:
 python scripts/fred_fed_funds_central_tendency.py
+
+# Pull the FRED target range, compute its midpoint, and compare it to neutral-rate expectations:
+python scripts/fred_target_midpoint_vs_neutral.py
 ```
 
 PDF extraction scripts reuse existing CSV outputs as a cache. By default they
@@ -93,6 +96,9 @@ rows without medians or `--force` to reprocess everything.
 | `data_out/fred_fed_funds_central_tendency.csv` | FRED SEP longer-run fed funds median and central tendency series |
 | `data_out/fred_fed_funds_central_tendency_metadata.csv` | FRED metadata for the longer-run fed funds series |
 | `data_out/fred_fed_funds_central_tendency.png` | FRED SEP longer-run fed funds chart |
+| `data_out/fed_target_midpoint_vs_neutral.csv` | FRED target range midpoint aligned with SEP and NY Fed neutral-rate medians |
+| `data_out/fed_target_midpoint_vs_neutral_metadata.csv` | FRED metadata for target range and SEP median series |
+| `data_out/fed_target_midpoint_vs_neutral.png` | Fed target midpoint vs neutral-rate expectations chart |
 | `data_out/us_rstar_comparison.xlsx` | Comparison with Hartley (2024) data |
 
 ## Output Format
@@ -125,6 +131,7 @@ neutral-rate-survey/
 │   ├── 02_extract_xlsx.py         # Extract data from XLSX files
 │   ├── 03_extract_pdf_llm.py      # Extract data from PDFs using GPT-5.2
 │   ├── 04_combine_and_plot.py     # Combine extracts into final CSV
+│   ├── fred_target_midpoint_vs_neutral.py # Compare FRED target midpoint to neutral estimates
 │   ├── fred_fed_funds_central_tendency.py # Pull FRED SEP central tendency series
 │   ├── plot_realtime_sep_vs_market.py # Compare SEP vintages to market expectations
 │   └── run_all.py                 # Run full pipeline
@@ -198,6 +205,9 @@ python scripts/sep_run_all.py
 | `data_out/fred_fed_funds_central_tendency.csv` | FRED longer-run series: FEDTARMDLR, FEDTARCTLLR, FEDTARCTMLR, FEDTARCTHLR |
 | `data_out/fred_fed_funds_central_tendency_metadata.csv` | FRED metadata for the longer-run fed funds series |
 | `data_out/fred_fed_funds_central_tendency.png` | FRED longer-run fed funds median and central tendency chart |
+| `data_out/fed_target_midpoint_vs_neutral.csv` | Daily FRED target range midpoint plus SEP and NY Fed neutral-rate medians |
+| `data_out/fed_target_midpoint_vs_neutral_metadata.csv` | FRED metadata for DFEDTARL, DFEDTARU, and FEDTARMDLR |
+| `data_out/fed_target_midpoint_vs_neutral.png` | Fed target midpoint vs longer-run neutral-rate expectations chart |
 
 **Note:** Historical PDF extraction (2012-2019) is in progress. The chart currently shows 2020+ data from HTML sources.
 
@@ -221,6 +231,18 @@ start in 2015.
 
 The chart plots `FEDTARMDLR` and `FEDTARCTMLR` as separate lines, with the
 central tendency bounds shaded between `FEDTARCTLLR` and `FEDTARCTHLR`.
+
+### Fed Target Midpoint vs Neutral Expectations
+
+![Fed Funds Target Midpoint vs Neutral Rate Expectations](data_out/fed_target_midpoint_vs_neutral.png)
+
+```bash
+python scripts/fred_target_midpoint_vs_neutral.py
+```
+
+This pulls FRED series `DFEDTARL` and `DFEDTARU`, computes the target-range
+midpoint as `(lower + upper) / 2`, and plots it against `FEDTARMDLR` and the NY
+Fed survey medians from `data_out/nyfed_ff_longrun_percentiles.csv`.
 
 ## Real-Time SEP vs Market Expectations
 
